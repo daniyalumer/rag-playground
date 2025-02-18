@@ -1,0 +1,915 @@
+New prompt created
+
+def create_extraction_prompt(cv_text: str) -> str:
+    return f"""You are a CV parsing assistant. Your task is to extract structured information from the CV below and return ONLY a JSON object with no additional text or explanation.
+
+    CV TEXT:
+    {cv_text}
+
+    Please extract the information in the following JSON format (no other text allowed), ensuring that:
+    1. **All keys must be present in the output JSON**, even if their values are missing.
+    2. **Key names must match exactly** as provided in the JSON structure below; each key should be enclosed in double quotes.
+    3. **Do not introduce additional keys, remove any keys, or modify key names**.
+    4. **Ensure correct data types** as specified (e.g., `boolean`, `float`, `string`).
+    5. **If no data is available for a field, set its value to `null` (JSON equivalent of `None` in Python)**.
+    6. **All dates must follow the format `YYYY-MM-DD`** (e.g., `"2025-02-13"`).
+
+    Focus on these teenage indicators:
+    1. Education timeline (high school/early university)
+    2. Lack of traditional work experience
+    3. Focus on extracurricular activities
+    4. Email address style
+    5. Basic/introductory certifications
+    6. Writing style and tone
+    7. Early-age internships
+    8. Mentions of parents/guardians
+
+
+    Here is the expected JSON structure:
+    {{
+        "is_teenage": boolean,
+        "teenage_confidence": float,  // 0.0 to 1.0 confidence that this is a teenage CV
+        "age_indicators": {{
+            "education_timeline": string | null,  // e.g., "Currently in high school", "Expected graduation 2028"
+            "work_experience_type": string | null,  // e.g., "Mostly internships and volunteering"
+            "extracurricular_focus": string | null,  // e.g., "Heavy involvement in school clubs"
+            "email_style": string | null,  // e.g., "Professional", "Youth-indicating"
+            "certification_level": string | null,  // e.g., "Basic/Introductory certifications"
+            "writing_style": string | null  // e.g., "Professional", "Casual/First-person"
+        }},
+        "contact_information": {{
+            "full_name": string | null,
+            "phone_number": string | null,
+            "email": string | null,
+            "linkedin": string | null,
+            "portfolio_website": string | null,
+            "address": string | null
+        }},
+        "personal_summary": string | null,
+        "education": [{{
+            "degree": string | null,
+            "institution": string | null,
+            "location": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null,  // YYYY-MM-DD
+            "gpa": float | null,
+            "honors": string | null,
+            "description": string | null
+        }}],
+        "work_experience": [{{
+            "job_title": string | null,
+            "employer": string | null,
+            "location": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null,  // YYYY-MM-DD
+            "description": string | null,
+            "achievements": string | null
+        }}],
+        "skills": [{{
+            "category": string | null,
+            "details": string | null
+        }}],
+        "projects": [{{
+            "title": string | null,
+            "description": string | null,
+            "role": string | null,
+            "technologies": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null  // YYYY-MM-DD
+        }}],
+        "certifications": [{{
+            "name": string | null,
+            "issuing_organization": string | null,
+            "issue_date": string | null,  // YYYY-MM-DD
+            "expiration_date": string | null  // YYYY-MM-DD
+        }}],
+        "publications": [{{
+            "title": string | null,
+            "publisher": string | null,
+            "publication_date": string | null,  // YYYY-MM-DD
+            "url": string | null
+        }}],
+        "languages": [{{
+            "language": string | null,
+            "proficiency": string | null
+        }}],
+        "awards_and_honors": [{{
+            "title": string | null,
+            "issuing_organization": string | null,
+            "issue_date": string | null,  // YYYY-MM-DD
+            "description": string | null
+        }}],
+        "volunteer_experience": [{{
+            "role": string | null,
+            "organization": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null,  // YYYY-MM-DD
+            "description": string | null
+        }}],
+        "references": [{{
+            "name": string | null,
+            "relationship": string | null,
+            "contact_information": string | null
+        }}]
+    }}"""
+
+
+
+
+
+
+
+
+
+
+
+OUTPUT BY PROMPT OPTIMZER
+
+You are a CV parsing assistant. Your task is to extract structured information from the CV below and return ONLY a JSON object with no additional text or explanation.
+
+CV TEXT:
+{cv_text}
+
+Please extract the information in the following JSON format (no other text allowed), ensuring that:
+1. **All keys must be present in the output JSON**, even if their values are missing.
+2. **Key names must match exactly** as provided in the JSON structure below; each key should be enclosed in double quotes.
+3. **Do not introduce additional keys, remove any keys, or modify key names**.
+4. **Ensure correct data types** as specified (e.g., `boolean`, `float`, `string`).
+5. **If no data is available for a field, set its value to `null` (JSON equivalent of `None` in Python)**.
+6. **All dates must follow the format `YYYY-MM-DD`** (e.g., `"2025-02-13"`).
+
+Focus on these teenage indicators:
+1. Education timeline (high school/early university)
+2. Lack of traditional work experience
+3. Focus on extracurricular activities
+4. Email address style
+5. Basic/introductory certifications
+6. Writing style and tone
+7. Early-age internships
+8. Mentions of parents/guardians
+
+Here is the expected JSON structure:
+
+```json
+{
+    "is_teenage": null,
+    "teenage_confidence": null,
+    "age_indicators": {
+        "education_timeline": null,
+        "work_experience_type": null,
+        "extracurricular_focus": null,
+        "email_style": null,
+        "certification_level": null,
+        "writing_style": null
+    },
+    "contact_information": {
+        "full_name": null,
+        "phone_number": null,
+        "email": null,
+        "linkedin": null,
+        "portfolio_website": null,
+        "address": null
+    },
+    "personal_summary": null,
+    "education": [
+        {
+            "degree": null,
+            "institution": null,
+            "location": null,
+            "start_date": null,
+            "end_date": null,
+            "gpa": null,
+            "honors": null,
+            "description": null
+        }
+    ],
+    "work_experience": [
+        {
+            "job_title": null,
+            "employer": null,
+            "location": null,
+            "start_date": null,
+            "end_date": null,
+            "description": null,
+            "achievements": null
+        }
+    ],
+    "skills": [
+        {
+            "category": null,
+            "details": null
+        }
+    ],
+    "projects": [
+        {
+            "title": null,
+            "description": null,
+            "role": null,
+            "technologies": null,
+            "start_date": null,
+            "end_date": null
+        }
+    ],
+    "certifications": [
+        {
+            "name": null,
+            "issuing_organization": null,
+            "issue_date": null,
+            "expiration_date": null
+        }
+    ],
+    "publications": [
+        {
+            "title": null,
+            "publisher": null,
+            "publication_date": null,
+            "url": null
+        }
+    ],
+    "languages": [
+        {
+            "language": null,
+            "proficiency": null
+        }
+    ],
+    "awards_and_honors": [
+        {
+            "title": null,
+            "issuing_organization": null,
+            "issue_date": null,
+            "description": null
+        }
+    ],
+    "volunteer_experience": [
+        {
+            "role": null,
+            "organization": null,
+            "start_date": null,
+            "end_date": null,
+            "description": null
+        }
+    ],
+    "references": [
+        {
+            "name": null,
+            "relationship": null,
+            "contact_information": null
+        }
+    ]
+}
+```
+
+
+
+
+
+
+def create_extraction_prompt(cv_text: str) -> str:
+    return f"""You are a CV parsing assistant. Your task is to extract structured information from the CV below and return ONLY a JSON object with no additional text or explanation. 
+
+    Also determine if this is likely a teenager's CV based on the indicators provided.
+
+    CV TEXT:
+    {cv_text}
+
+    Please extract the information in the following JSON format (no other text allowed), ensuring that:
+    1. **All keys must be present in the output JSON**, even if their values are missing.
+    2. **Key names must match exactly** as provided in the JSON structure below.
+    3. **Do not introduce additional keys, remove any keys, or modify key names**.
+    4. **Ensure correct data types** as specified (e.g., `boolean`, `float`, `string`).
+    5. **If no data is available for a field, set its value to `null` (JSON equivalent of `None` in Python).**
+    6. **All dates must follow the format `YYYY-MM-DD`** (e.g., `"2025-02-13"`).
+
+    {{
+        "is_teenage": boolean,
+        "teenage_confidence": float,  // 0.0 to 1.0 confidence that this is a teenage CV
+        "age_indicators": {{
+            "education_timeline": string | null,  // e.g., "Currently in high school", "Expected graduation 2028"
+            "work_experience_type": string | null,  // e.g., "Mostly internships and volunteering"
+            "extracurricular_focus": string | null,  // e.g., "Heavy involvement in school clubs"
+            "email_style": string | null,  // e.g., "Professional", "Youth-indicating"
+            "certification_level": string | null,  // e.g., "Basic/Introductory certifications"
+            "writing_style": string | null  // e.g., "Professional", "Casual/First-person"
+        }},
+        "contact_information": {{
+            "full_name": string | null,
+            "phone_number": string | null,
+            "email": string | null,
+            "linkedin": string | null,
+            "portfolio_website": string | null,
+            "address": string | null
+        }},
+        "personal_summary": string | null,
+        "education": [{{
+            "degree": string | null,
+            "institution": string | null,
+            "location": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null,  // YYYY-MM-DD
+            "gpa": float | null,
+            "honors": string | null,
+            "description": string | null
+        }}],
+        "work_experience": [{{
+            "job_title": string | null,
+            "employer": string | null,
+            "location": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null,  // YYYY-MM-DD
+            "description": string | null,
+            "achievements": string | null
+        }}],
+        "skills": [{{
+            "category": string | null,
+            "details": string | null
+        }}],
+        "projects": [{{
+            "title": string | null,
+            "description": string | null,
+            "role": string | null,
+            "technologies": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null  // YYYY-MM-DD
+        }}],
+        "certifications": [{{
+            "name": string | null,
+            "issuing_organization": string | null,
+            "issue_date": string | null,  // YYYY-MM-DD
+            "expiration_date": string | null  // YYYY-MM-DD
+        }}],
+        "publications": [{{
+            "title": string | null,
+            "publisher": string | null,
+            "publication_date": string | null,  // YYYY-MM-DD
+            "url": string | null
+        }}],
+        "languages": [{{
+            "language": string | null,
+            "proficiency": string | null
+        }}],
+        "awards_and_honors": [{{
+            "title": string | null,
+            "issuing_organization": string | null,
+            "issue_date": string | null,  // YYYY-MM-DD
+            "description": string | null
+        }}],
+        "volunteer_experience": [{{
+            "role": string | null,
+            "organization": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null,  // YYYY-MM-DD
+            "description": string | null
+        }}],
+        "references": [{{
+            "name": string | null,
+            "relationship": string | null,
+            "contact_information": string | null
+        }}]
+    }}
+
+    Focus on these teenage indicators:
+    1. Education timeline (high school/early university)
+    2. Lack of traditional work experience
+    3. Focus on extracurricular activities
+    4. Email address style
+    5. Basic/introductory certifications
+    6. Writing style and tone
+    7. Early-age internships
+    8. Mentions of parents/guardians"""
+
+
+
+
+
+
+def create_extraction_prompt(cv_text: str) -> str:
+    return f"""You are a CV parsing assistant. Your task is to extract structured information from the CV below and return ONLY a JSON object with no additional text or explanation. 
+
+    Also determine if this is likely a teenager's CV based on the indicators provided.
+
+    CV TEXT:
+    {cv_text}
+
+    Please extract the information in the following JSON format (no other text allowed), ensuring that:
+    1. **All keys must be present in the output JSON**, even if their values are missing.
+    2. **Key names must match exactly** as provided in the JSON structure below.
+    3. **Do not introduce additional keys, remove any keys, or modify key names**.
+    4. **Ensure correct data types** as specified (e.g., `boolean`, `float`, `string`).
+    5. **If no data is available for a field, set its value to `null` (JSON equivalent of `None` in Python).**
+       - Strings should never contain `"not provided"`, `"N/A"`, or `""` — use `null` instead.
+       - Floats and integers should never default to `0` unless explicitly mentioned in the CV — use `null` instead.
+    6. **All dates must follow the format `YYYY-MM-DD`** (e.g., `"2025-02-13"`).
+       - If a date is not provided, return `null`.
+
+    {{
+        "is_teenage": boolean,
+        "teenage_confidence": float,  // 0.0 to 1.0 confidence that this is a teenage CV
+        "age_indicators": {{
+            "education_timeline": string | null,  // e.g., "Currently in high school", "Expected graduation 2028"
+            "work_experience_type": string | null,  // e.g., "Mostly internships and volunteering"
+            "extracurricular_focus": string | null,  // e.g., "Heavy involvement in school clubs"
+            "email_style": string | null,  // e.g., "Professional", "Youth-indicating"
+            "certification_level": string | null,  // e.g., "Basic/Introductory certifications"
+            "writing_style": string | null  // e.g., "Professional", "Casual/First-person"
+        }},
+        "contact_information": {{
+            "full_name": string | null,
+            "phone_number": string | null,
+            "email": string | null,
+            "linkedin": string | null,
+            "portfolio_website": string | null,
+            "address": string | null
+        }},
+        "personal_summary": string | null,
+        "education": [{{
+            "degree": string | null,
+            "institution": string | null,
+            "location": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null,  // YYYY-MM-DD
+            "gpa": float | null,
+            "honors": string | null,
+            "description": string | null
+        }}],
+        "work_experience": [{{
+            "job_title": string | null,
+            "employer": string | null,
+            "location": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null,  // YYYY-MM-DD
+            "description": string | null,
+            "achievements": string | null
+        }}],
+        "skills": [{{
+            "category": string | null,
+            "details": string | null
+        }}],
+        "projects": [{{
+            "title": string | null,
+            "description": string | null,
+            "role": string | null,
+            "technologies": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null  // YYYY-MM-DD
+        }}],
+        "certifications": [{{
+            "name": string | null,
+            "issuing_organization": string | null,
+            "issue_date": string | null,  // YYYY-MM-DD
+            "expiration_date": string | null  // YYYY-MM-DD
+        }}],
+        "publications": [{{
+            "title": string | null,
+            "publisher": string | null,
+            "publication_date": string | null,  // YYYY-MM-DD
+            "url": string | null
+        }}],
+        "languages": [{{
+            "language": string | null,
+            "proficiency": string | null
+        }}],
+        "awards_and_honors": [{{
+            "title": string | null,
+            "issuing_organization": string | null,
+            "issue_date": string | null,  // YYYY-MM-DD
+            "description": string | null
+        }}],
+        "volunteer_experience": [{{
+            "role": string | null,
+            "organization": string | null,
+            "start_date": string | null,  // YYYY-MM-DD
+            "end_date": string | null,  // YYYY-MM-DD
+            "description": string | null
+        }}],
+        "references": [{{
+            "name": string | null,
+            "relationship": string | null,
+            "contact_information": string | null
+        }}]
+    }}
+
+    Focus on these teenage indicators:
+    1. Education timeline (high school/early university)
+    2. Lack of traditional work experience
+    3. Focus on extracurricular activities
+    4. Email address style
+    5. Basic/introductory certifications
+    6. Writing style and tone
+    7. Early-age internships
+    8. Mentions of parents/guardians"""
+
+
+
+def create_extraction_prompt(cv_text: str) -> str:
+    return f"""You are a CV parsing assistant. Your task is to extract structured information from the CV below and return ONLY a JSON object with no additional text or explanation. 
+
+    Also determine if this is likely a teenager's CV based on the indicators provided.
+
+    CV TEXT:
+    {cv_text}
+
+    Please extract the information in the following JSON format (no other text allowed), ensuring that:
+    1. **All keys must be present in the output JSON**, even if their values are empty or null.
+    2. **Key names must match exactly as provided** in the JSON structure below.
+    3. **Do not introduce additional keys, remove any keys, or modify key names**.
+    4. **Ensure correct data types** as specified (e.g., `boolean`, `float`, `string`).
+    
+    {{
+        "is_teenage": boolean,
+        "teenage_confidence": float,  // 0.0 to 1.0 confidence that this is a teenage CV
+        "age_indicators": {{
+            "education_timeline": string,  // e.g., "Currently in high school", "Expected graduation 2028"
+            "work_experience_type": string,  // e.g., "Mostly internships and volunteering"
+            "extracurricular_focus": string,  // e.g., "Heavy involvement in school clubs"
+            "email_style": string,  // e.g., "Professional", "Youth-indicating"
+            "certification_level": string,  // e.g., "Basic/Introductory certifications"
+            "writing_style": string  // e.g., "Professional", "Casual/First-person"
+        }},
+        "contact_information": {{
+            "full_name": string,
+            "phone_number": string,
+            "email": string,
+            "linkedin": string,
+            "portfolio_website": string,
+            "address": string
+        }},
+        "personal_summary": string,
+        "education": [{{
+            "degree": string,
+            "institution": string,
+            "location": string,
+            "start_date": string,
+            "end_date": string,
+            "gpa": float,
+            "honors": string,
+            "description": string
+        }}],
+        "work_experience": [{{
+            "job_title": string,
+            "employer": string,
+            "location": string,
+            "start_date": string,
+            "end_date": string,
+            "description": string,
+            "achievements": string
+        }}],
+        "skills": [{{
+            "category": string,
+            "details": string
+        }}],
+        "projects": [{{
+            "title": string,
+            "description": string,
+            "role": string,
+            "technologies": string,
+            "start_date": string,
+            "end_date": string
+        }}],
+        "certifications": [{{
+            "name": string,
+            "issuing_organization": string,
+            "issue_date": string,
+            "expiration_date": string
+        }}],
+        "publications": [{{
+            "title": string,
+            "publisher": string,
+            "publication_date": string,
+            "url": string
+        }}],
+        "languages": [{{
+            "language": string,
+            "proficiency": string
+        }}],
+        "awards_and_honors": [{{
+            "title": string,
+            "issuing_organization": string,
+            "issue_date": string,
+            "description": string
+        }}],
+        "volunteer_experience": [{{
+            "role": string,
+            "organization": string,
+            "start_date": string,
+            "end_date": string,
+            "description": string
+        }}],
+        "references": [{{
+            "name": string,
+            "relationship": string,
+            "contact_information": string
+        }}]
+    }}
+
+    Focus on these teenage indicators:
+    1. Education timeline (high school/early university)
+    2. Lack of traditional work experience
+    3. Focus on extracurricular activities
+    4. Email address style
+    5. Basic/introductory certifications
+    6. Writing style and tone
+    7. Early-age internships
+    8. Mentions of parents/guardians"""
+
+
+
+
+
+
+
+def create_extraction_prompt(cv_text: str) -> str:
+    return f"""You are a CV parsing assistant. Your task is to extract structured information from the CV below and return ONLY a JSON object with no additional text or explanation. 
+
+    Also determine if this is likely a teenager's CV based on the indicators provided.
+
+    CV TEXT:
+    {cv_text}
+
+    Please extract the information in the following JSON format(no other text allowed), paying special attention to indicators of the candidate's age group:
+
+    {{
+        "is_teenage": boolean,
+        "teenage_confidence": float,  // 0.0 to 1.0 confidence that this is a teenage CV
+        "age_indicators": {{
+            "education_timeline": string,  // e.g., "Currently in high school", "Expected graduation 2028"
+            "work_experience_type": string,  // e.g., "Mostly internships and volunteering"
+            "extracurricular_focus": string,  // e.g., "Heavy involvement in school clubs"
+            "email_style": string,  // e.g., "Professional", "Youth-indicating"
+            "certification_level": string,  // e.g., "Basic/Introductory certifications"
+            "writing_style": string  // e.g., "Professional", "Casual/First-person"
+        }},
+        "contact_information": {{
+            "full_name": string,
+            "phone_number": string,
+            "email": string,
+            "linkedin": string,
+            "portfolio_website": string,
+            "address": string
+        }},
+        "personal_summary": string,
+        "education": [{{
+            "degree": string,
+            "institution": string,
+            "location": string,
+            "start_date": string,
+            "end_date": string,
+            "gpa": float,
+            "honors": string,
+            "description": string
+        }}],
+        "work_experience": [{{
+            "job_title": string,
+            "employer": string,
+            "location": string,
+            "start_date": string,
+            "end_date": string,
+            "description": string,
+            "achievements": string
+        }}],
+        "skills": [{{
+            "category": string,
+            "details": string
+        }}],
+        "projects": [{{
+            "title": string,
+            "description": string,
+            "role": string,
+            "technologies": string,
+            "start_date": string,
+            "end_date": string
+        }}],
+        "certifications": [{{
+            "name": string,
+            "issuing_organization": string,
+            "issue_date": string,
+            "expiration_date": string
+        }}],
+        "publications": [{{
+            "title": string,
+            "publisher": string,
+            "publication_date": string,
+            "url": string
+        }}],
+        "languages": [{{
+            "language": string,
+            "proficiency": string
+        }}],
+        "awards_and_honors": [{{
+            "title": string,
+            "issuing_organization": string,
+            "issue_date": string,
+            "description": string
+        }}],
+        "volunteer_experience": [{{
+            "role": string,
+            "organization": string,
+            "start_date": string,
+            "end_date": string,
+            "description": string
+        }}],
+        "references": [{{
+            "name": string,
+            "relationship": string,
+            "contact_information": string
+        }}]
+    }}
+
+    Focus on these teenage indicators:
+    1. Education timeline (high school/early university)
+    2. Lack of traditional work experience
+    3. Focus on extracurricular activities
+    4. Email address style
+    5. Basic/introductory certifications
+    6. Writing style and tone
+    7. Early-age internships
+    8. Mentions of parents/guardians"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# JSON Schema for validation
+CV_SCHEMA = {
+    "type": "object",
+    "required": ["is_teenage", "teenage_confidence", "age_indicators", "contact_information", "personal_summary", "education", "work_experience", "skills", "projects", "certifications", "publications", "languages", "awards_and_honors", "volunteer_experience", "references"],
+    "properties": {
+        "is_teenage": {"type": "boolean"},
+        "teenage_confidence": {
+            "type": ["number"],  # Allow null
+            "minimum": 0.0,
+            "maximum": 1.0
+        },
+        "age_indicators": {
+            "type": ["object", "null"],  # Allow null
+            "required": ["education_timeline", "work_experience_type", "extracurricular_focus", 
+                        "email_style", "certification_level", "writing_style"],
+            "properties": {
+                "education_timeline": {"type": ["string", "null"]},  # Allow null
+                "work_experience_type": {"type": ["string", "null"]},  # Allow null
+                "extracurricular_focus": {"type": ["string", "null"]},  # Allow null
+                "email_style": {"type": ["string", "null"]},  # Allow null
+                "certification_level": {"type": ["string", "null"]},  # Allow null
+                "writing_style": {"type": ["string", "null"]}  # Allow null
+            }
+        },
+        "contact_information": {
+            "type": ["object", "null"],  # Allow null
+            "required": ["full_name", "phone_number", "email", "linkedin", "portfolio_website", "address"],
+            "properties": {
+                "full_name": {"type": ["string", "null"]},  # Allow null
+                "phone_number": {"type": ["string", "null"]},  # Allow null
+                "email": {"type": ["string", "null"]},  # Allow null
+                "linkedin": {"type": ["string", "null"]},  # Allow null
+                "portfolio_website": {"type": ["string", "null"]},  # Allow null
+                "address": {"type": ["string", "null"]}  # Allow null
+            }
+        },
+        "personal_summary": {"type": ["string", "null"]},  # Allow null
+        "education": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["degree", "institution", "location", "start_date", "end_date", "gpa", "honors", "description"],
+                "properties": {
+                    "degree": {"type": ["string", "null"]},  # Allow null
+                    "institution": {"type": ["string", "null"]},  # Allow null
+                    "location": {"type": ["string", "null"]},  # Allow null
+                    "start_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "end_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "gpa": {"type": ["number", "null"]},  # Allow null
+                    "honors": {"type": ["string", "null"]},  # Allow null
+                    "description": {"type": ["string", "null"]}  # Allow null
+                }
+            }
+        },
+        "work_experience": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["job_title", "employer", "location", "start_date", "end_date", "description", "achievements"],
+                "properties": {
+                    "job_title": {"type": ["string", "null"]},  # Allow null
+                    "employer": {"type": ["string", "null"]},  # Allow null
+                    "location": {"type": ["string", "null"]},  # Allow null
+                    "start_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "end_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "description": {"type": ["string", "null"]},  # Allow null
+                    "achievements": {"type": ["string", "null"]}  # Allow null
+                }
+            }
+        },
+        "skills": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["category", "details"],
+                "properties": {
+                    "category": {"type": ["string", "null"]},  # Allow null
+                    "details": {"type": ["string", "null"]}  # Allow null
+                }
+            }
+        },
+        "projects": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["title", "description", "role", "technologies", "start_date", "end_date"],
+                "properties": {
+                    "title": {"type": ["string", "null"]},  # Allow null
+                    "description": {"type": ["string", "null"]},  # Allow null
+                    "role": {"type": ["string", "null"]},  # Allow null
+                    "technologies": {"type": ["string", "null"]},  # Allow null
+                    "start_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "end_date": {"type": ["string", "null"], "format": "date"}  # Allow null
+                }
+            }
+        },
+        "certifications": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["name", "issuing_organization", "issue_date", "expiration_date"],
+                "properties": {
+                    "name": {"type": ["string", "null"]},  # Allow null
+                    "issuing_organization": {"type": ["string", "null"]},  # Allow null
+                    "issue_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "expiration_date": {"type": ["string", "null"], "format": "date"}  # Allow null
+                }
+            }
+        },
+        "publications": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["title", "publisher", "publication_date", "url"],
+                "properties": {
+                    "title": {"type": ["string", "null"]},  # Allow null
+                    "publisher": {"type": ["string", "null"]},  # Allow null
+                    "publication_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "url": {"type": ["string", "null"]}  # Allow null
+                }
+            }
+        },
+        "languages": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["language", "proficiency"],
+                "properties": {
+                    "language": {"type": ["string", "null"]},  # Allow null
+                    "proficiency": {"type": ["string", "null"]}  # Allow null
+                }
+            }
+        },
+        "awards_and_honors": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["title", "issuing_organization", "issue_date", "description"],
+                "properties": {
+                    "title": {"type": ["string", "null"]},  # Allow null
+                    "issuing_organization": {"type": ["string", "null"]},  # Allow null
+                    "issue_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "description": {"type": ["string", "null"]}  # Allow null
+                }
+            }
+        },
+        "volunteer_experience": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["role", "organization", "start_date", "end_date", "description"],
+                "properties": {
+                    "role": {"type": ["string", "null"]},  # Allow null
+                    "organization": {"type": ["string", "null"]},  # Allow null
+                    "start_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "end_date": {"type": ["string", "null"], "format": "date"},  # Allow null
+                    "description": {"type": ["string", "null"]}  # Allow null
+                }
+            }
+        },
+        "references": {
+            "type": ["array", "null"],  # Allow null
+            "items": {
+                "type": "object",
+                "required": ["name", "relationship", "contact_information"],
+                "properties": {
+                    "name": {"type": ["string", "null"]},  # Allow null
+                    "relationship": {"type": ["string", "null"]},  # Allow null
+                    "contact_information": {"type": ["string", "null"]}  # Allow null
+                }
+            }
+        }
+    }
+}
