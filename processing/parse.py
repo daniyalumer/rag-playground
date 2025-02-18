@@ -4,12 +4,11 @@ import logging
 import pandas as pd
 import pprint
 from typing import Optional
-from datetime import datetime
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from config.config import OPENAI_API_KEY
-from config.logging_config import setup_logging  # Import the logging setup function
+from config.logging_config import setup_logging 
 from processing.models import ResponseFormatter
 
 def create_extraction_prompt(cv_text: str) -> ChatPromptTemplate:

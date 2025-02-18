@@ -1,13 +1,12 @@
 import os
 import json
 import logging
-from langchain_openai import OpenAIEmbeddings
 from tqdm import tqdm
-from config.config import OPENAI_API_KEY
-from config.logging_config import setup_logging  # Import the logging setup function
+from config.logging_config import setup_logging  
+from clients.openai_embeddings import create_openai_embeddings
 
 # Initialize OpenAI embeddings
-embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large", openai_api_key=OPENAI_API_KEY)
+embeddings_model = create_openai_embeddings()
 
 def calculate_embeddings(data):
     # Calculate embeddings for relevant fields based on the mapping
@@ -85,14 +84,14 @@ def calculate_embeddings(data):
                                 # Store embeddings in the expected nested structure
                                 if 'semantic' not in item:
                                     item['semantic'] = {}
-                                item['semantic'][f"{subfield}_embedding"] = embeddings_model.embed_documents(item[subfield])
+                                item['semantic'][f"{subfield}_embedding"] = embeddings_model.embed_query(item[subfield])
         else:
             if data.get(field) is not None and isinstance(data[field], str):
                 # Replace the original string with a new nested dictionary
                 data[field] = {
                     'value': data[field],  # Store the original string value
                     'semantic': {
-                        f"{field}_embedding": embeddings_model.embed_documents(data[field])
+                        f"{field}_embedding": embeddings_model.embed_query(data[field])
                     }
                 }
     
@@ -123,6 +122,3 @@ def process_json_files(input_dir, output_dir):
             with open(output_file_path, 'w') as f:
                 json.dump(updated_data, f, indent=2)
             logging.info(f"Successfully saved {filename}")
-
-# Example usage
-# process_json_files('path/to/input_dir', 'path/to/output_dir')

@@ -1,5 +1,6 @@
 import json
 import os
+from elasticsearch import helpers
 
 def create_index(client, index_name):
     mapping = {
@@ -331,7 +332,6 @@ def create_index(client, index_name):
     }
     # Create the index with the specified mapping
     client.indices.create(index=index_name, body=mapping)
-
 
 def index_documents(client, index_name, data_directory):
     for filename in os.listdir(data_directory):

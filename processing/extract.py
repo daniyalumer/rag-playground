@@ -17,14 +17,8 @@ def extract_text_from_pdf(pdf_path: str) -> str:
     except Exception as e:
         print(f"Error extracting text from {pdf_path}: {e}")
         return ""
-    
-def sanitize_text(text: str) -> str:
-    """Sanitize the input text to remove invalid control characters."""
-    # Remove control characters (except for newline and tab)
-    sanitized = re.sub(r'[^\x09\x0A\x20-\x7E]', '', text)
-    return sanitized
 
-def sanitize_text2(text: str) -> str:
+def sanitize_text(text: str) -> str:
     """Sanitize input text to remove invalid control characters while preserving Unicode."""
     # Remove all ASCII control characters except tabs (\t), newlines (\n, \r)
     text = re.sub(r'[^\x09\x0A\x0D\x20-\x7E\u0080-\uFFFF]', '', text)
@@ -36,7 +30,7 @@ def sanitize_text2(text: str) -> str:
     
 def preprocess_text(text: str) -> str:
     """Preprocess the input text by sanitizing it."""
-    sanitized_text = sanitize_text2(text)
+    sanitized_text = sanitize_text(text)
     return sanitized_text
 
 def process_pdfs(base_dir: str) -> pd.DataFrame:

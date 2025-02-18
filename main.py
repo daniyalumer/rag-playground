@@ -3,7 +3,7 @@ import pandas as pd
 from processing.extract import process_pdfs
 from processing.parse import process_cvs
 from processing.calculate_embeddings import process_json_files#, process_json_file
-from clients.elasticsearch_client import create_es_client
+from clients.elasticsearch import create_es_client
 from indexing import create_index, index_documents, delete_index
 
 def main():
@@ -41,8 +41,8 @@ def main():
     print("--------------------------DELETING INDEX-------------------------")
     delete_index(client, index_name)
     try:
-        create_index(client, index_name)
         print("------------------------CREATING INDEX-------------------------")
+        create_index(client, index_name)
     except Exception as e:
         print(f"Index might already exist: {e}")
 
@@ -51,6 +51,8 @@ def main():
     # Index documents
     data_directory = "data/parsed_data_embeddings"
     index_documents(client, index_name, data_directory)
+
+    print("Indexing complete")
 
     #    # Initialize search
     #search_engine = SearchEngine()

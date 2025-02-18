@@ -15,6 +15,7 @@ json5 = "*"
 langchain = "*"
 langchain-community = "*"
 langchain-openai = "*"
+urllib3 = "*"
 
 [dev-packages]
 
