@@ -20,11 +20,6 @@ def calculate_embeddings(data):
             'writing_style'
         ],
         'contact_information': [
-            'full_name',
-            'phone_number',
-            'email',
-            'linkedin',
-            'portfolio_website',
             'address'
         ],
         'personal_summary': 'personal_summary',
@@ -51,12 +46,13 @@ def calculate_embeddings(data):
         ],
         'certifications': [
             'name',
+            'description',
             'issuing_organization'
         ],
         'publications': [
             'title',
             'publisher',
-            'url'
+            'description'
         ],
         'languages': [
             'language',
@@ -97,7 +93,29 @@ def calculate_embeddings(data):
     
     return data
 
-def process_json_files(input_dir, output_dir):
+
+def embed_json_file(input_file_path, output_file_path):
+    setup_logging('embeddings_calculation')
+    os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
+    
+    # Skip processing if the output file already exists
+    if os.path.exists(output_file_path):
+        logging.info(f"Skipping {os.path.basename(input_file_path)} - already processed")
+        return
+    
+    with open(input_file_path, 'r') as f:
+        data = json.load(f)
+    
+    logging.info(f"Calculating embeddings for {os.path.basename(input_file_path)}")
+    # Calculate embeddings
+    updated_data = calculate_embeddings(data)
+    
+    # Save updated JSON with embeddings
+    with open(output_file_path, 'w') as f:
+        json.dump(updated_data, f, indent=2)
+    logging.info(f"Successfully saved {os.path.basename(output_file_path)}")
+
+def embed_json_files(input_dir, output_dir):
     setup_logging('embeddings_calculation')
     os.makedirs(output_dir, exist_ok=True)
     

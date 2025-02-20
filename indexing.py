@@ -4,6 +4,10 @@ from elasticsearch import helpers
 
 def create_index(client, index_name):
     mapping = {
+        "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 0
+        },
         "mappings": {
             "properties": {
                 # Document Identifier as a top-level field
@@ -196,6 +200,9 @@ def create_index(client, index_name):
                         "name": {
                             "type": "text"
                         },
+                        "description": {
+                            "type": "text"
+                        },
                         "issuing_organization": {
                             "type": "text"
                         },
@@ -206,6 +213,7 @@ def create_index(client, index_name):
                             "type": "nested",
                             "properties": {
                                 "name_embedding": {"type": "dense_vector", "dims": 3072},
+                                "description_embedding": {"type": "dense_vector", "dims": 3072},
                                 "issuing_organization_embedding": {"type": "dense_vector", "dims": 3072}
                             }
                         }
@@ -222,6 +230,9 @@ def create_index(client, index_name):
                         "publisher": {
                             "type": "text"
                         },
+                        "description": {
+                            "type": "text"
+                        },
                         "publication_date": {"type": "date"},
                         "url": {
                             "type": "text"
@@ -232,7 +243,7 @@ def create_index(client, index_name):
                             "properties": {
                                 "title_embedding": {"type": "dense_vector", "dims": 3072},
                                 "publisher_embedding": {"type": "dense_vector", "dims": 3072},
-                                "url_embedding": {"type": "dense_vector", "dims": 3072}
+                                "description_embedding": {"type": "dense_vector", "dims": 3072}
                             }
                         }
                     }

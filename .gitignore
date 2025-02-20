@@ -135,3 +135,7 @@ logs/
 
 # Data directory
 data/
+
+# Testing files for data
+jd_prompts.txt
+prompts.txt

@@ -11,7 +11,7 @@ from config.config import OPENAI_API_KEY
 from config.logging_config import setup_logging 
 from processing.models import ResponseFormatter
 
-def create_extraction_prompt(cv_text: str) -> ChatPromptTemplate:
+def create_extraction_prompt_cv(cv_text: str) -> ChatPromptTemplate:
     system_message = SystemMessage(
         content="""
         You are a CV parsing assistant. Your task is to extract structured information from the given CV and analyze whether it belongs to a teenager. 
@@ -70,7 +70,7 @@ def parse_cv(raw_text: str, filename: str) -> Optional[ResponseFormatter]:
     """Parse CV text using LangChain and return structured data"""
     try:
         logging.info(f"Starting parsing for {filename}")
-        prompt = create_extraction_prompt(raw_text)
+        prompt = create_extraction_prompt_cv(raw_text)
 
         prompt = prompt.format_messages()
         
@@ -170,3 +170,5 @@ def process_cvs(csv_path: str, batch_size: int = 10):
     except Exception as e:
         logging.error(f"Error during batch processing: {e}")
         raise
+
+

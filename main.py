@@ -1,10 +1,13 @@
 import os
 import pandas as pd
+import json
 from processing.extract import process_pdfs
-from processing.parse import process_cvs
-from processing.calculate_embeddings import process_json_files#, process_json_file
+from processing.parse_cv import process_cvs
+from processing.calculate_embeddings import embed_json_files, embed_json_file
 from clients.elasticsearch import create_es_client
 from indexing import create_index, index_documents, delete_index
+from processing.parse_jd import process_job_description
+from querying.knn_search import knn_search
 
 def main():
 
@@ -29,7 +32,7 @@ def main():
     #input_directory = 'data/parsed_data/28998957.json'
     input_directory = 'data/parsed_data'
     output_directory = 'data/parsed_data_embeddings'
-    process_json_files(input_directory, output_directory)
+    embed_json_files(input_directory, output_directory)
 
     client = create_es_client()
     print(client.info())
@@ -52,7 +55,30 @@ def main():
     data_directory = "data/parsed_data_embeddings"
     index_documents(client, index_name, data_directory)
 
-    print("Indexing complete")
+    print("---------------------------Indexing complete--------------------------")
+
+    # Load job description
+
+    print("---------------------------Parsing job description---------------------")
+
+    # Commented to save tokens
+
+    print("-------------------Calculating embeddings for job description-------------------")
+
+    # input_file_path = 'data/parsed_jd/parsed_job_description.json'
+    output_file_path = 'data/parsed_jd_embeddings/parsed_job_description_embeddings.json'
+    # embed_json_file(input_file_path, output_file_path)
+
+
+    # Perform KNN search
+    print("-------------------------Performing KNN search----------------------------------")
+    with open(output_file_path, 'r') as file:
+        parsed_job_description_embeddings = json.load(file)
+    results = knn_search(client, index_name, parsed_job_description_embeddings)
+    for hit in results['hits']['hits']:
+        print(f"Score: {hit['_score']}")
+        print(f"Document ID: {hit['_source']}")
+    
 
     #    # Initialize search
     #search_engine = SearchEngine()
