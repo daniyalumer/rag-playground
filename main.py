@@ -42,18 +42,18 @@ def main():
     index_name = "rag-playground"
     #print(f'index info:', client.indices.get(index=index_name))
     print("--------------------------DELETING INDEX-------------------------")
-    delete_index(client, index_name)
+    #delete_index(client, index_name)
     try:
         print("------------------------CREATING INDEX-------------------------")
-        create_index(client, index_name)
+    #    create_index(client, index_name)
     except Exception as e:
         print(f"Index might already exist: {e}")
 
     print("--------------------------INDEXING DOCUMENTS-------------------------")
 
     # Index documents
-    data_directory = "data/parsed_data_embeddings"
-    index_documents(client, index_name, data_directory)
+    #data_directory = "data/parsed_data_embeddings"
+    #index_documents(client, index_name, data_directory)
 
     print("---------------------------Indexing complete--------------------------")
 
@@ -76,8 +76,16 @@ def main():
         parsed_job_description_embeddings = json.load(file)
     results = knn_search(client, index_name, parsed_job_description_embeddings)
     for hit in results['hits']['hits']:
+        if results.get('error'):
+            print("Error:", results['error'])
         print(f"Score: {hit['_score']}")
         print(f"Document ID: {hit['_source']}")
+        print(f"Hit: {hit}")
+        print("-"*50)
+
+    # Check index mapping
+    # mapping = client.indices.get_mapping(index=index_name)
+    # print("Index mapping:", json.dumps(mapping.body, indent=2))  # Use .body to get serializable dict
     
 
     #    # Initialize search
