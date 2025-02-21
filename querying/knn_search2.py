@@ -3,30 +3,10 @@ import os
 from datetime import datetime
 
 def construct_knn_query(parsed_job_description):
-    # Initialize an array to hold all queries
-    queries = []
+    # Initialize a dictionary to hold queries by field
+    field_queries = {}
 
-    # # Add semantic search for age_indicators with default score_mode
-    # age_indicators = parsed_job_description.get("age_indicators", {})
-    # if "semantic" in age_indicators:
-    #     for field, embedding in age_indicators["semantic"].items():
-    #         if embedding:
-    #             queries.append({
-    #                 "nested": {
-    #                     "path": "age_indicators.semantic",
-    #                     "query": {
-    #                         "knn": {
-    #                             "field": f"age_indicators.semantic.{field}",
-    #                             "query_vector": embedding,
-    #                             "k": 3,
-    #                             "num_candidates": 10
-    #                         }
-    #                     },
-    #                     "score_mode": "avg"  # Default score mode for age_indicators
-    #                 }
-    #             })
-
-    # Add semantic search for other nested fields with customized settings
+    # Add semantic search for nested fields with customized settings
     nested_fields = {
         "age_indicators": {"boost": 1.0, "score_mode": "avg"},       # Average for age relevance
         "contact_information": {"boost": 0.7, "score_mode": "max"},  # Use max for best matching contact
@@ -42,6 +22,11 @@ def construct_knn_query(parsed_job_description):
         "volunteer_experience": {"boost": 1.0, "score_mode": "avg"}   # Average for experience relevance
     }
 
+    # Initialize query arrays for each field
+    for field_name in nested_fields.keys():
+        field_queries[field_name] = []
+
+    # Populate queries for each field
     for field_name, settings in nested_fields.items():
         field_data = parsed_job_description.get(field_name, [])
         if isinstance(field_data, list):
@@ -49,56 +34,79 @@ def construct_knn_query(parsed_job_description):
                 if "semantic" in item:
                     for embedding_field, embedding in item["semantic"].items():
                         if embedding:
-                            queries.append({
+                            field_queries[field_name].append({
                                 "nested": {
                                     "path": f"{field_name}.semantic",
                                     "query": {
-                                        "knn": {
-                                            "field": f"{field_name}.semantic.{embedding_field}",
-                                            "query_vector": embedding,
-                                            "k": 3,
-                                            "num_candidates": 10
+                                        "bool": {
+                                            "should": [
+                                                {
+                                                    "knn": {
+                                                        "field": f"{field_name}.semantic.{embedding_field}",
+                                                        "query_vector": embedding,
+                                                        "k": 3,
+                                                        "num_candidates": 10,
+                                                        "boost": settings["boost"]
+                                                    }
+                                                }
+                                            ]
                                         }
                                     },
-                                    "score_mode": settings["score_mode"],
-                                    "boost": settings["boost"]
+                                    "score_mode": settings["score_mode"]
                                 }
                             })
         elif isinstance(field_data, dict) and "semantic" in field_data:
             for embedding_field, embedding in field_data["semantic"].items():
                 if embedding:
-                    queries.append({
+                    field_queries[field_name].append({
                         "nested": {
                             "path": f"{field_name}.semantic",
                             "query": {
-                                "knn": {
-                                    "field": f"{field_name}.semantic.{embedding_field}",
-                                    "query_vector": embedding,
-                                    "k": 3,
-                                    "num_candidates": 10
+                                "bool": {
+                                    "should": [
+                                        {
+                                            "knn": {
+                                                "field": f"{field_name}.semantic.{embedding_field}",
+                                                "query_vector": embedding,
+                                                "k": 3,
+                                                "num_candidates": 10,
+                                                "boost": settings["boost"]
+                                            }
+                                        }
+                                    ]
                                 }
                             },
-                            "score_mode": settings["score_mode"],
-                            "boost": settings["boost"]
+                            "score_mode": settings["score_mode"]
                         }
                     })
 
-    # Rest of the function remains the same
+    # Create bool queries for each field
+    field_bool_queries = []
+    for field_name, queries in field_queries.items():
+        if queries:  # Only add fields that have queries
+            field_bool_queries.append({
+                "bool": {
+                    "should": queries,
+                    "minimum_should_match": 1
+                }
+            })
+
+    # Combine all field bool queries
     return {
         "bool": {
-            "should": queries,
+            "should": field_bool_queries,
             "minimum_should_match": 1
         }
     }
 
-def knn_search(client, index_name, parsed_job_description):
+def knn_search2(client, index_name, parsed_job_description):
     query = construct_knn_query(parsed_job_description)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filepath = os.path.join("data/generated_query", f"query_{timestamp}.json")
+    filepath = os.path.join("data/generated_query2", f"query_{timestamp}.json")
     
     # Ensure directory exists
-    os.makedirs("data/generated_query", exist_ok=True)
+    os.makedirs("data/generated_query2", exist_ok=True)
     
     # Save only the query with pretty formatting
     with open(filepath, 'w') as f:

@@ -60,12 +60,12 @@ def create_extraction_prompt_job_description(job_description_text: str) -> ChatP
         - Set `is_teenage` boolean based on overall assessment.
         - Provide `teenage_confidence` as a float between 0.0 and 1.0.
         - Ensure `age_indicators` object includes:
-        - `education_timeline`: Note required educational stage.
-        - `work_experience_type`: Describe required work experience.
-        - `extracurricular_focus`: Note desired extracurricular activities.
-        - `email_style`: Analyze formality of communication.
-        - `certification_level`: Assess required certification complexity.
-        - `writing_style`: Evaluate overall tone and formality.
+        - `education_timeline`: Note required educational stage for the job.
+        - `work_experience_type`: Describe required work experience for the job.
+        - `extracurricular_focus`: Note desired extracurricular activities for the job.
+        - `email_style`: Analyze formality of communication required for the job.
+        - `certification_level`: Assess required certification complexity required for the job.
+        - `writing_style`: Evaluate overall tone and formality for the job.
 
         1. Teenage Suitability Analysis:
            - Evaluate 'is_teenage' based on:
@@ -104,46 +104,96 @@ def create_extraction_prompt_job_description(job_description_text: str) -> ChatP
             * Analyze the language and tone of the job description.
             * Determine whether the role expects a highly professional writing style or allows for a more flexible, learning-oriented approach.
 
-        3. Work Experience Section:
+        3. Contact Information Extraction:
+           - Extract and structure the following contact details:
+            * Job poster's full name (if available)
+            * Contact phone number(s)
+            * Contact email address(es)
+            * LinkedIn profile URL
+            * Company/portfolio website
+            * Complete job location address including:
+                - Street address
+                - City/State/ZIP
+                - Country
+                - Geographic context
+            * Note: All fields are optional but must be included in output even if null    
+
+        4. Work Experience Section:
            Provide rich descriptions for embedding fields:
            - job_title: Include role context and alternative titles.
            - employer: Describe organization type and environment.
+           - location: Full address and geographical context.
            - description: Detailed responsibilities with context.
            - achievements: Expected outcomes and success metrics.
+           - contact_details: All available contact information.
 
-        4. Skills Section:
+        5. Skills Section:
            Create a comprehensive skills description including:
            - Technical skills with proficiency levels.
            - Soft skills with contextual examples.
            - Related and transferable skills.
            - Skill application contexts.
 
-        5. Education Section:
+        6. Education Section:
            Rich descriptions for:
            - degree: Include field context and alternatives.
            - institution: Type and level of institution.
            - honors: Academic achievements and their significance.
            - description: Program details and relevant coursework.
 
-        6. Projects Section:
+        7. Projects Section:
            Detailed descriptions for:
            - title: Project context and scope.
            - description: Comprehensive project details.
            - role: Responsibilities and leadership aspects.
            - technologies: Technical stack and tools used.
 
-        7. Personal Summary Guidance:
+        8. Personal Summary Guidance:
            Extract or infer:
+           - Generate a personal summary of an ideal candidate from the job description.
            - Key qualifications and their relevance.
            - Professional level and experience.
            - Core competencies and strengths.
            - Career trajectory indicators.
 
-        8. Additional Sections:
-           For all remaining sections (certifications, publications, languages, awards, volunteer experience):
-           - Provide detailed, context-rich descriptions.
-           - Include relevance to the role.
-           - Maintain semantic richness for embedding.
+        9. Additional Sections:
+            Certifications Section:
+           - For each required/preferred certification mentioned in the job description:
+             * name: Extract exact certification names or qualifications required
+             * description: Capture why this certification is relevant to the role
+             * issuing_organization: Identify preferred certification bodies
+             * issue_date: Note if recent certification is required (YYYY-MM-DD format)
+             * expiration_date: Note if certification must be current (YYYY-MM-DD format)
+
+            Publications Section:
+           - For any publication-related requirements:
+             * title: Type of publications required (e.g., "Technical Blog Posts", "Research Papers")
+             * publisher: Expected publishing platforms or journals
+             * description: Details about expected publication topics and impact
+             * publication_date: Timeframe requirements if specified (YYYY-MM-DD format)
+             * url: Links to example publications if provided
+
+            Languages Section:
+           - For each language requirement in the job posting:
+             * language: Required or preferred languages
+             * proficiency: Specified proficiency level required ("Beginner", "Intermediate", "Advanced", "Native")
+             * Note: Extract both primary and secondary language requirements
+
+            Awards and Honors Section:
+           - For any mentioned awards or achievements:
+             * title: Types of recognition valued by the employer
+             * issuing_organization: Relevant awarding bodies or organizations
+             * issue_date: Recency requirements if specified (YYYY-MM-DD format)
+             * description: How these achievements relate to the role
+
+            Volunteer Experience Section:
+           - For any volunteer experience requirements:
+             * role: Types of volunteer roles valued
+             * organization: Preferred organization types
+             * start_date: Experience timeframe if specified (YYYY-MM-DD format)
+             * end_date: Duration requirements if specified (YYYY-MM-DD format)
+             * description: How volunteer experience relates to the position
+
 
 
         Semantic Enhancement Requirements:

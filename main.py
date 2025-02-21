@@ -8,6 +8,8 @@ from clients.elasticsearch import create_es_client
 from indexing import create_index, index_documents, delete_index
 from processing.parse_jd import process_job_description
 from querying.knn_search import knn_search
+from querying.knn_search2 import knn_search2
+from querying.knn_search3 import knn_search3
 
 def main():
 
@@ -57,21 +59,29 @@ def main():
 
     print("---------------------------Indexing complete--------------------------")
 
-    # Load job description
-
     print("---------------------------Parsing job description---------------------")
 
     # Commented to save tokens
+    # Load job description
+    # job_description_path = "job_description.txt"
+    # output_directory = "data/parsed_jd"
+    # with open(job_description_path, "r") as file:
+    #     job_description = file.read()
+    #     process_job_description(job_description, output_directory)
 
     print("-------------------Calculating embeddings for job description-------------------")
 
-    # input_file_path = 'data/parsed_jd/parsed_job_description.json'
+    #input_file_path = 'data/parsed_jd/parsed_job_description.json'
     output_file_path = 'data/parsed_jd_embeddings/parsed_job_description_embeddings.json'
-    # embed_json_file(input_file_path, output_file_path)
+    #embed_json_file(input_file_path, output_file_path)
+
+    #input_file_path = 'data/parsed_jd/parsed_job_description2.json'
+    #output_file_path = 'data/parsed_jd_embeddings/parsed_job_description_embeddings2.json'
+    #embed_json_file(input_file_path, output_file_path)
 
 
     # Perform KNN search
-    print("-------------------------Performing KNN search----------------------------------")
+    print("-------------------------Performing KNN search1----------------------------------")
     with open(output_file_path, 'r') as file:
         parsed_job_description_embeddings = json.load(file)
     results = knn_search(client, index_name, parsed_job_description_embeddings)
@@ -82,6 +92,31 @@ def main():
         print(f"Document ID: {hit['_source']}")
         print(f"Hit: {hit}")
         print("-"*50)
+
+    print("-------------------------Performing KNN search2----------------------------------")
+    with open(output_file_path, 'r') as file:
+        parsed_job_description_embeddings = json.load(file) 
+    results = knn_search2(client, index_name, parsed_job_description_embeddings)
+    for hit in results['hits']['hits']:
+        if results.get('error'):
+            print("Error:", results['error'])
+        print(f"Score: {hit['_score']}")
+        print(f"Document ID: {hit['_source']}")
+        print(f"Hit: {hit}")
+        print("-"*50)
+
+    print("-------------------------Performing KNN search3----------------------------------")
+    with open(output_file_path, 'r') as file:
+        parsed_job_description_embeddings = json.load(file)
+    results = knn_search3(client, index_name, parsed_job_description_embeddings)
+    for hit in results['hits']['hits']:
+        if results.get('error'):
+            print("Error:", results['error'])
+        print(f"Score: {hit['_score']}")
+        print(f"Document ID: {hit['_source']}")
+        print(f"Hit: {hit}")
+        print("-"*50)
+        
 
     # Check index mapping
     # mapping = client.indices.get_mapping(index=index_name)
