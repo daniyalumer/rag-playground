@@ -2,88 +2,62 @@ import json
 import os
 from datetime import datetime
 
-def construct_knn_query(parsed_job_description):
-    # Initialize an array to hold all queries
+def construct_knn_query(embedded_query):
+    """
+    Construct KNN query from pre-embedded query vectors.
+    
+    Args:
+        embedded_query (dict): Dictionary containing embedded vectors for each field
+    
+    Returns:
+        dict: Elasticsearch query object with knn queries
+    """
     queries = []
-
-    # # Add semantic search for age_indicators with default score_mode
-    # age_indicators = parsed_job_description.get("age_indicators", {})
-    # if "semantic" in age_indicators:
-    #     for field, embedding in age_indicators["semantic"].items():
-    #         if embedding:
-    #             queries.append({
-    #                 "nested": {
-    #                     "path": "age_indicators.semantic",
-    #                     "query": {
-    #                         "knn": {
-    #                             "field": f"age_indicators.semantic.{field}",
-    #                             "query_vector": embedding,
-    #                             "k": 3,
-    #                             "num_candidates": 10
-    #                         }
-    #                     },
-    #                     "score_mode": "avg"  # Default score mode for age_indicators
-    #                 }
-    #             })
-
-    # Add semantic search for other nested fields with customized settings
+    
+    # Define which fields are nested in the index
     nested_fields = {
-        "age_indicators": {"boost": 1.0, "score_mode": "avg"},       # Average for age relevance
-        "contact_information": {"boost": 0.7, "score_mode": "max"},  # Use max for best matching contact
-        "personal_summary": {"boost": 1.5, "score_mode": "max"},     # Average for overall summary match
-        "work_experience": {"boost": 2.0, "score_mode": "sum"},      # Sum for cumulative experience
-        "education": {"boost": 2.0, "score_mode": "sum"},            # Average for education level
-        "skills": {"boost": 2.5, "score_mode": "max"},               # Max for best skill matches
-        "projects": {"boost": 1.5, "score_mode": "avg"},             # Average for project relevance
-        "certifications": {"boost": 1.3, "score_mode": "avg"},       # Max for most relevant cert
-        "publications": {"boost": 1.2, "score_mode": "avg"},         # Average for publication match
-        "languages": {"boost": 1.0, "score_mode": "max"},            # Max for best language match
-        "awards_and_honors": {"boost": 1.0, "score_mode": "max"},    # Max for best award match
-        "volunteer_experience": {"boost": 1.0, "score_mode": "avg"}   # Average for experience relevance
+        "education", "work_experience", "projects", "certifications",
+        "publications", "languages", "awards_and_honors", "volunteer_experience"
     }
-
-    for field_name, settings in nested_fields.items():
-        field_data = parsed_job_description.get(field_name, [])
-        if isinstance(field_data, list):
-            for item in field_data:
-                if "semantic" in item:
-                    for embedding_field, embedding in item["semantic"].items():
-                        if embedding:
-                            queries.append({
-                                "nested": {
-                                    "path": f"{field_name}.semantic",
-                                    "query": {
-                                        "knn": {
-                                            "field": f"{field_name}.semantic.{embedding_field}",
-                                            "query_vector": embedding,
-                                            "k": 3,
-                                            "num_candidates": 10
-                                        }
-                                    },
-                                    "score_mode": settings["score_mode"],
-                                    "boost": settings["boost"]
+    
+    # Process each field in the embedded query
+    for field_name in embedded_query:
+        field_data = embedded_query.get(field_name)
+        if isinstance(field_data, dict):
+            # Check if this is a nested field in the index
+            if field_name in nested_fields:
+                # Construct nested KNN query
+                for key, value in field_data.items():
+                    if value and key.endswith('_embedding'):
+                        queries.append({
+                            "nested": {
+                                "path": field_name,
+                                "query": {
+                                    "knn": {
+                                        "query_vector": value,
+                                        "field": f"{field_name}.{key}",
+                                        "num_candidates": 10,
+                                        "k": 3
+                                    }
                                 }
-                            })
-        elif isinstance(field_data, dict) and "semantic" in field_data:
-            for embedding_field, embedding in field_data["semantic"].items():
-                if embedding:
-                    queries.append({
-                        "nested": {
-                            "path": f"{field_name}.semantic",
-                            "query": {
-                                "knn": {
-                                    "field": f"{field_name}.semantic.{embedding_field}",
-                                    "query_vector": embedding,
-                                    "k": 3,
-                                    "num_candidates": 10
-                                }
-                            },
-                            "score_mode": settings["score_mode"],
-                            "boost": settings["boost"]
-                        }
-                    })
-
-    # Rest of the function remains the same
+                            }
+                        })
+            else:
+                # Construct regular KNN query for non-nested fields
+                for key, value in field_data.items():
+                    if value and key.endswith('_embedding'):
+                        queries.append({
+                            "knn": {
+                                "query_vector": value,
+                                "field": f"{field_name}.{key}",
+                                "num_candidates": 10,
+                                "k": 3
+                            }
+                        })
+    
+    if not queries:
+        return {}  # Return empty query if no embeddings found
+        
     return {
         "bool": {
             "should": queries,
@@ -91,28 +65,38 @@ def construct_knn_query(parsed_job_description):
         }
     }
 
-def knn_search(client, index_name, parsed_job_description):
-    query = construct_knn_query(parsed_job_description)
+def knn_search(client, index_name, embedded_query):
+    """
+    Perform KNN search using pre-embedded query vectors.
+    
+    Args:
+        client: Elasticsearch client
+        index_name (str): Name of the index to search
+        embedded_query (dict): Pre-embedded query vectors
+    
+    Returns:
+        dict: Elasticsearch search response
+    """
+    query = construct_knn_query(embedded_query)
 
+    # Save query for debugging
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filepath = os.path.join("data/generated_query", f"query_{timestamp}.json")
     
-    # Ensure directory exists
     os.makedirs("data/generated_query", exist_ok=True)
     
-    # Save only the query with pretty formatting
     with open(filepath, 'w') as f:
         json.dump(query, f, indent=2)
+    print(f"Generated query saved to {filepath}")
 
     response = client.search(
         index=index_name,
         body={
-            "size": 3,  # Limit number of results
+            "size": 10,
             "query": query,
-            "_source": ["document_id", "is_teenage", "teenage_confidence", "teenage_indicators"],
+            "_source": ["document_id", "is_teenage", "teenage_confidence"],
             "track_scores": True,
-            "explain": True,
-            "min_score": 3.0
+            "explain": True
         }
     )
     

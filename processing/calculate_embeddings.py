@@ -77,18 +77,15 @@ def calculate_embeddings(data):
                     if isinstance(item, dict):
                         for subfield in subfields:
                             if subfield in item and item[subfield] is not None and isinstance(item[subfield], str):
-                                # Store embeddings in the expected nested structure
-                                if 'semantic' not in item:
-                                    item['semantic'] = {}
-                                item['semantic'][f"{subfield}_embedding"] = embeddings_model.embed_query(item[subfield])
+                                # Store embeddings directly in the object
+                                item[f"{subfield}_embedding"] = embeddings_model.embed_query(item[subfield])
         else:
             if data.get(field) is not None and isinstance(data[field], str):
-                # Replace the original string with a new nested dictionary
+                # Add the embedding directly to the object
+                embedding = embeddings_model.embed_query(data[field])
                 data[field] = {
-                    'value': data[field],  # Store the original string value
-                    'semantic': {
-                        f"{field}_embedding": embeddings_model.embed_query(data[field])
-                    }
+                    "value": data[field],
+                    f"{field}_embedding": embedding
                 }
     
     return data

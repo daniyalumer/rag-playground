@@ -1,7 +1,16 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
+from datetime import date
 
-# Pydantic models for structured output
+def validate_date_format(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    try:
+        date.fromisoformat(value)
+        return value
+    except ValueError:
+        raise ValueError("Date must be in YYYY-MM-DD format")
+
 class AgeIndicators(BaseModel):
     education_timeline: Optional[str]
     work_experience_type: Optional[str]
@@ -28,6 +37,11 @@ class Education(BaseModel):
     honors: Optional[str]
     description: Optional[str]
 
+    @field_validator('start_date', 'end_date')
+    @classmethod
+    def validate_dates(cls, v: Optional[str]) -> Optional[str]:
+        return validate_date_format(v)
+
 class WorkExperience(BaseModel):
     job_title: Optional[str]
     employer: Optional[str]
@@ -37,6 +51,11 @@ class WorkExperience(BaseModel):
     description: Optional[str]
     achievements: Optional[str]
 
+    @field_validator('start_date', 'end_date')
+    @classmethod
+    def validate_dates(cls, v: Optional[str]) -> Optional[str]:
+        return validate_date_format(v)
+
 class Project(BaseModel):
     title: Optional[str]
     description: Optional[str]
@@ -45,6 +64,11 @@ class Project(BaseModel):
     start_date: Optional[str]
     end_date: Optional[str]
 
+    @field_validator('start_date', 'end_date')
+    @classmethod
+    def validate_dates(cls, v: Optional[str]) -> Optional[str]:
+        return validate_date_format(v)
+
 class Certification(BaseModel):
     name: Optional[str]
     description: Optional[str]
@@ -52,12 +76,22 @@ class Certification(BaseModel):
     issue_date: Optional[str]
     expiration_date: Optional[str]
 
+    @field_validator('issue_date', 'expiration_date')
+    @classmethod
+    def validate_dates(cls, v: Optional[str]) -> Optional[str]:
+        return validate_date_format(v)
+
 class Publication(BaseModel):
     title: Optional[str]
     publisher: Optional[str]
     description: Optional[str]
     publication_date: Optional[str]
     url: Optional[str]
+
+    @field_validator('publication_date')
+    @classmethod
+    def validate_dates(cls, v: Optional[str]) -> Optional[str]:
+        return validate_date_format(v)
 
 class Language(BaseModel):
     language: Optional[str]
@@ -69,12 +103,22 @@ class AwardAndHonor(BaseModel):
     issue_date: Optional[str]
     description: Optional[str]
 
+    @field_validator('issue_date')
+    @classmethod
+    def validate_dates(cls, v: Optional[str]) -> Optional[str]:
+        return validate_date_format(v)
+
 class VolunteerExperience(BaseModel):
     role: Optional[str]
     organization: Optional[str]
     start_date: Optional[str]
     end_date: Optional[str]
     description: Optional[str]
+
+    @field_validator('start_date', 'end_date')
+    @classmethod
+    def validate_dates(cls, v: Optional[str]) -> Optional[str]:
+        return validate_date_format(v)
 
 class Reference(BaseModel):
     name: Optional[str]
@@ -83,7 +127,7 @@ class Reference(BaseModel):
 
 class ResponseFormatter(BaseModel):
     is_teenage: bool
-    teenage_confidence: float #= Field(ge=0.0, le=1.0)
+    teenage_confidence: float
     age_indicators: AgeIndicators
     contact_information: ContactInformation
     personal_summary: Optional[str]
