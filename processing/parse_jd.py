@@ -7,7 +7,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from config.logging_config import setup_logging 
 from config.config import OPENAI_API_KEY
-from processing.models import ResponseFormatter
+from processing.models_query import ResponseFormatter
 
 def create_extraction_prompt_job_description(job_description_text: str) -> ChatPromptTemplate:
     system_message = SystemMessage(

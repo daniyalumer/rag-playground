@@ -9,7 +9,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from config.config import OPENAI_API_KEY
 from config.logging_config import setup_logging 
-from processing.models import ResponseFormatter
+from processing.models_cv import ResponseFormatter
 
 def create_extraction_prompt_cv(cv_text: str) -> ChatPromptTemplate:
     system_message = SystemMessage(
