@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional, List
+from pydantic import BaseModel, field_validator
+from typing import Optional
 from datetime import date
 
 def validate_date_format(value: Optional[str]) -> Optional[str]:
@@ -125,7 +125,7 @@ class Reference(BaseModel):
     relationship: Optional[str]
     contact_information: Optional[str]
 
-class ResponseFormatter(BaseModel):
+class QueryFormatter(BaseModel):
     is_teenage: bool
     teenage_confidence: float
     age_indicators: AgeIndicators

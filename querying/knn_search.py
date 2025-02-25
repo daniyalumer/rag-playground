@@ -4,15 +4,25 @@ from datetime import datetime
 
 def construct_knn_query(embedded_query):
     """
-    Construct KNN query from pre-embedded query vectors.
-    
-    Args:
-        embedded_query (dict): Dictionary containing embedded vectors for each field
-    
-    Returns:
-        dict: Elasticsearch query object with knn queries
+    Construct KNN query from pre-embedded query vectors with field boosting
+    and hybrid search (vector + text).
     """
-    queries = []
+    knn_queries = []
+    keyword_queries = set()  # Use set to prevent duplicates
+    
+    # Define field weights for boosting
+    field_weights = {
+        "work_experience": 4.0,
+        "skills": 3.5,
+        "education": 2.0,
+        "personal_summary": 1.5,
+        "projects": 1.5,
+        "certifications": 1.2
+    }
+    
+    # Weight multipliers for semantic vs text search
+    SEMANTIC_WEIGHT = 1.5  # Semantic search gets higher weight
+    TEXT_WEIGHT = 0.5     # Text search gets lower weight
     
     # Define which fields are nested in the index
     nested_fields = {
@@ -22,46 +32,89 @@ def construct_knn_query(embedded_query):
     
     # Process each field in the embedded query
     for field_name in embedded_query:
+        if field_name == "age_indicators":
+            continue
+            
         field_data = embedded_query.get(field_name)
         if isinstance(field_data, dict):
+            field_boost = field_weights.get(field_name, 1.0)
+            
             # Check if this is a nested field in the index
             if field_name in nested_fields:
-                # Construct nested KNN query
+                # Process each field in the nested object
                 for key, value in field_data.items():
+                    # Handle semantic search (vector fields)
                     if value and key.endswith('_embedding'):
-                        queries.append({
+                        knn_queries.append({
                             "nested": {
                                 "path": field_name,
                                 "query": {
                                     "knn": {
                                         "query_vector": value,
                                         "field": f"{field_name}.{key}",
-                                        "num_candidates": 10,
-                                        "k": 3
+                                        "num_candidates": 100,
+                                        "k": 10,
+                                        "boost": field_boost * SEMANTIC_WEIGHT
                                     }
                                 }
                             }
                         })
+                    
+                    # Handle text search for all non-embedding fields
+                    elif isinstance(value, str) and not key.endswith('_embedding'):
+                        query_str = json.dumps({
+                            "nested": {
+                                "path": field_name,
+                                "query": {
+                                    "match": {
+                                        f"{field_name}.{key}": {
+                                            "query": value,
+                                            "boost": field_boost * TEXT_WEIGHT,
+                                            "fuzziness": "AUTO"
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                        keyword_queries.add(query_str)
             else:
-                # Construct regular KNN query for non-nested fields
+                # Process non-nested fields
                 for key, value in field_data.items():
+                    # Handle semantic search (vector fields)
                     if value and key.endswith('_embedding'):
-                        queries.append({
+                        knn_queries.append({
                             "knn": {
                                 "query_vector": value,
                                 "field": f"{field_name}.{key}",
-                                "num_candidates": 10,
-                                "k": 3
+                                "num_candidates": 100,
+                                "k": 10,
+                                "boost": field_boost * SEMANTIC_WEIGHT
                             }
                         })
+                    
+                    # Handle text search for non-embedding fields
+                    elif isinstance(value, str) and not key.endswith('_embedding'):
+                        query_str = json.dumps({
+                            "match": {
+                                f"{field_name}.{key}": {
+                                    "query": value,
+                                    "boost": field_boost * TEXT_WEIGHT,
+                                    "fuzziness": "AUTO"
+                                }
+                            }
+                        })
+                        keyword_queries.add(query_str)
     
-    if not queries:
-        return {}  # Return empty query if no embeddings found
+    if not knn_queries and not keyword_queries:
+        return {}  # Return empty query if no queries generated
+    
+    # Convert string queries back to dictionaries
+    keyword_queries_list = [json.loads(q) for q in keyword_queries]
         
     return {
         "bool": {
-            "should": queries,
-            "minimum_should_match": 1
+            "should": knn_queries + keyword_queries_list,
+            "minimum_should_match": "30%"
         }
     }
 
@@ -101,3 +154,4 @@ def knn_search(client, index_name, embedded_query):
     )
     
     return response
+    

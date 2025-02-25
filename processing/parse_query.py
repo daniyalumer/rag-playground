@@ -7,19 +7,20 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from config.logging_config import setup_logging 
 from config.config import OPENAI_API_KEY
-from processing.models_query import ResponseFormatter
+from processing.models_query import QueryFormatter
 
 def create_extraction_prompt_job_description(job_description_text: str) -> ChatPromptTemplate:
     system_message = SystemMessage(
         content="""
-        You are an advanced semantic parsing expert specializing in job description analysis and vector-based matching. 
-        Your role is to extract rich, semantically meaningful information that will be converted into vector embeddings for matching with candidate profiles. 
-        Your task is to extract structured information from the given job description and analyze whether it belongs to a teenager. 
+        You are an advanced semantic parsing expert specializing in candidate query and job description analysis with vector-based matching capabilities. 
+        Your role is to extract rich, semantically meaningful information from both natural language queries and job descriptions that will be converted into vector embeddings for matching with candidate profiles. 
+        Your task is to extract structured information from the given input and analyze whether it targets or belongs to a teenage candidate. 
+        The input can range from a detailed job description to a simple search phrase like "Software Engineer from MIT" or "Looking for a CS graduate from Stanford with 2 years experience in Python".
         Return ONLY a valid JSON object that strictly follows the predefined schema—no additional text, comments, or explanations.
         
         **Important:** The response **must** adhere to the predefined schema with exact key names and correct data types.
         
-        Pay special attention to indicators of a teenage CV:
+        Pay special attention to indicators of a teenage job description:
         1. Education timeline (required education level)
         2. Work experience type (required work experience)
         3. Extracurricular focus (desired extracurricular activities)
@@ -28,11 +29,14 @@ def create_extraction_prompt_job_description(job_description_text: str) -> ChatP
         6. Writing style (tone and formality of the job description)
 
         Core Responsibilities:
-        1. Extract explicit requirements and implicit expectations
+        1. Extract explicit requirements and implicit expectations from any input length
         2. Analyze semantic context and professional level
         3. Identify age-appropriate indicators
         4. Assess skill transferability for young applicants
         5. Determine teenage suitability with high confidence
+        6. Infer missing details from context
+        7. Map brief mentions to comprehensive structured data
+        8. Maintain semantic consistency regardless of input format
 
         Guidelines for Semantic Analysis:
         - Consider both direct statements and contextual implications
@@ -40,12 +44,25 @@ def create_extraction_prompt_job_description(job_description_text: str) -> ChatP
         - Evaluate flexibility in requirements for young applicants
         - Assess the developmental nature of stated responsibilities
         - Map professional requirements to teenage-equivalent experiences
+        - Expand abbreviated terms and acronyms
+        - Infer implied requirements and preferences
+        - Handle both structured and unstructured input formats
         """
     )
 
     user_message = HumanMessage(
         content=f"""
         Extract structured information from the job description text below while strictly adhering to these rules:
+
+        **Input Analysis Requirements:**
+        - Handle both detailed job descriptions and brief search queries
+        - Extract meaning from incomplete or informal queries
+        - Expand abbreviated terms and acronyms
+        - Infer missing information from context
+        - Map brief mentions to full structured data
+        - Consider both explicit and implicit requirements
+        
+
 
         **Output Requirements:**
         - Return a **valid JSON object** that strictly follows the predefined schema.
@@ -58,7 +75,7 @@ def create_extraction_prompt_job_description(job_description_text: str) -> ChatP
 
         **Teenage Analysis Requirements:**
         - Set `is_teenage` boolean based on overall assessment.
-        - Provide `teenage_confidence` as a float between 0.0 and 1.0.
+        - Provide `teenage_confidence` as a float between 0.0 and 1.0, extent to which job is meant for a teenager.
         - Ensure `age_indicators` object includes:
         - `education_timeline`: Note required educational stage for the job.
         - `work_experience_type`: Describe required work experience for the job.
@@ -119,34 +136,41 @@ def create_extraction_prompt_job_description(job_description_text: str) -> ChatP
             * Note: All fields are optional but must be included in output even if null    
 
         4. Work Experience Section:
-           Provide rich descriptions for embedding fields:
+           Provide rich descriptions and extract information for:
            - job_title: Include role context and alternative titles.
-           - employer: Describe organization type and environment.
+           - employer: Organization name and alternative titles.
            - location: Full address and geographical context.
+           - start_date: Employment start date (YYYY-MM-DD format).
+           - end_date: Employment end date (YYYY-MM-DD format).
            - description: Detailed responsibilities with context.
            - achievements: Expected outcomes and success metrics.
-           - contact_details: All available contact information.
 
         5. Skills Section:
            Create a comprehensive skills description including:
-           - Technical skills with proficiency levels.
-           - Soft skills with contextual examples.
+           - Technical skills with proficiency levels and alternate names.
+           - Soft skills with proficiency levels and alternate names.
            - Related and transferable skills.
            - Skill application contexts.
 
         6. Education Section:
-           Rich descriptions for:
+           Rich descriptions and extract information for:
            - degree: Include field context and alternatives.
-           - institution: Type and level of institution.
+           - institution: Institution name, level of institution.
+           - location: Full address and geographical context.
+           - start_date: Education start date (YYYY-MM-DD format).
+           - end_date: Education end date (YYYY-MM-DD format).
+           - gpa: Grade point average and scale.
            - honors: Academic achievements and their significance.
            - description: Program details and relevant coursework.
 
         7. Projects Section:
-           Detailed descriptions for:
+           Detailed descriptions and extract information for:
            - title: Project context and scope.
            - description: Comprehensive project details.
            - role: Responsibilities and leadership aspects.
            - technologies: Technical stack and tools used.
+           - start_date: Project start date (YYYY-MM-DD format).
+           - end_date: Project end date (YYYY-MM-DD format).
 
         8. Personal Summary Guidance:
            Extract or infer:
@@ -226,7 +250,7 @@ def create_extraction_prompt_job_description(job_description_text: str) -> ChatP
 
     return ChatPromptTemplate.from_messages([system_message, user_message])
 
-def process_job_description(job_description_text: str, output_directory: str):
+def process_job_description(job_description_text: str, output_directory: str, filename: str):
     """Parse job description text using LangChain and return structured data"""
     setup_logging('job_description_parsing')
     try:
@@ -243,7 +267,7 @@ def process_job_description(job_description_text: str, output_directory: str):
             openai_api_key=OPENAI_API_KEY
         )
 
-        model_with_structure = model.with_structured_output(ResponseFormatter)
+        model_with_structure = model.with_structured_output(QueryFormatter)
 
         response = model_with_structure.invoke(prompt)
 
@@ -261,7 +285,7 @@ def process_job_description(job_description_text: str, output_directory: str):
             os.makedirs(output_directory, exist_ok=True)
             
             # Save parsed data to file
-            output_file_path = os.path.join(output_directory, 'parsed_job_description.json')
+            output_file_path = os.path.join(output_directory, filename)
             with open(output_file_path, 'w') as output_file:
                 json.dump(parsed_data, output_file, indent=4)
             

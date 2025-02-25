@@ -4,13 +4,13 @@ import json
 import datetime
 from processing.extract import process_pdfs
 from processing.parse_cv import process_cvs
+from processing.parse_query import process_job_description
 from processing.calculate_embeddings import embed_json_files, embed_json_file
 from processing.user_input import collect_user_input, save_and_embed_query
 from clients.elasticsearch import create_es_client
 from indexing import create_index, index_documents, delete_index
 from querying.knn_search import knn_search
-from querying.knn_search2 import knn_search2
-from querying.knn_search3 import knn_search3
+
 
 def main():
 
@@ -62,22 +62,40 @@ def main():
 
     print("---------------------------Parsing job description---------------------")
 
-    #user_input = input("Please enter the job description: ")
+    # user_input = input("Please enter the job description: ")
+    # # Parse the user input into structured format
+    # timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # # Parse and save query with timestamp
+    # parsed_query_directory = "data/user_query"
+    # input_file_path = f"data/user_query/parsed_query_{timestamp}.json"
+    # parsed_query = process_job_description(user_input, parsed_query_directory, filename=f"parsed_query_{timestamp}.json")
+
+    # print("---------------------------Embedding job description---------------------")
+
+    # # Embed the parsed job description
+    # output_file_path = f"data/user_query_embeddings/parsed_query_embeddings_{timestamp}.json"
+    # embed_json_file(input_file_path, output_file_path)
+    
+
+
 
     # Take user input for all fields
-    print("---------------------------Collecting User Input---------------------")
-    user_data = collect_user_input()
-    print("User data collected:")
-    print(user_data)
-
-    # Save and embed user query
-    embedded_query_file, embedded_query = save_and_embed_query(user_data)
+    #print("---------------------------Collecting User Input---------------------")
 
 
+    # user_data = collect_user_input()
+    # print("User data collected:")
+    # print(user_data)
+
+    # # Save and embed user query
+    # embedded_query_file, embedded_query = save_and_embed_query(user_data)
+
+    output_file_path = "data/user_query_embeddings/parsed_query_embeddings_20250225_120206.json"
     # Perform KNN search
-    # print("-------------------------Performing KNN search----------------------------------")
-    # with open('data/user_query_embeddings/query_20250224_124831_embedding.json', 'r') as file:
-    #     embedded_query = json.load(file)
+    print("-------------------------Performing KNN search----------------------------------")
+    with open(output_file_path, 'r') as file:
+        embedded_query = json.load(file)
     results = knn_search(client, index_name, embedded_query)
     
     # Display results
