@@ -62,20 +62,20 @@ def main():
 
     print("---------------------------Parsing job description---------------------")
 
-    # user_input = input("Please enter the job description: ")
-    # # Parse the user input into structured format
-    # timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    user_input = input("Please enter the job description: ")
+    # Parse the user input into structured format
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # # Parse and save query with timestamp
-    # parsed_query_directory = "data/user_query"
-    # input_file_path = f"data/user_query/parsed_query_{timestamp}.json"
-    # parsed_query = process_job_description(user_input, parsed_query_directory, filename=f"parsed_query_{timestamp}.json")
+    # Parse and save query with timestamp
+    parsed_query_directory = "data/user_query"
+    input_file_path = f"data/user_query/parsed_query_{timestamp}.json"
+    parsed_query = process_job_description(user_input, parsed_query_directory, filename=f"parsed_query_{timestamp}.json")
 
-    # print("---------------------------Embedding job description---------------------")
+    print("---------------------------Embedding job description---------------------")
 
-    # # Embed the parsed job description
-    # output_file_path = f"data/user_query_embeddings/parsed_query_embeddings_{timestamp}.json"
-    # embed_json_file(input_file_path, output_file_path)
+    # Embed the parsed job description
+    output_file_path = f"data/user_query_embeddings/parsed_query_embeddings_{timestamp}.json"
+    embed_json_file(input_file_path, output_file_path)
     
 
 
@@ -91,7 +91,7 @@ def main():
     # # Save and embed user query
     # embedded_query_file, embedded_query = save_and_embed_query(user_data)
 
-    output_file_path = "data/user_query_embeddings/parsed_query_embeddings_20250225_120206.json"
+    #output_file_path = "data/user_query_embeddings/parsed_query_embeddings_20250225_120206.json"
     # Perform KNN search
     print("-------------------------Performing KNN search----------------------------------")
     with open(output_file_path, 'r') as file:
