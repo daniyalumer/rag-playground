@@ -255,7 +255,7 @@ class Reference(BaseModel, BoostMixin):
 
 class Skills(BaseModel):
     value: Optional[str] = None
-    skills_boost: float
+    value_boost: float
     skills_embedding_boost: float
 
 class PersonalSummary(BaseModel):

@@ -84,9 +84,9 @@ def calculate_embeddings(data):
                 # Add the embedding directly to the object
                 embedding = embeddings_model.embed_query(data[field]['value'])
                 data[field] = {
-                    f"{field}": data[field]['value'],
+                    f"value": data[field]['value'],
                     f"{field}_embedding": embedding,
-                    f"{field}_boost": data.get(field).get(f"{field}_boost"),
+                    f"value_boost": data.get(field).get(f"value_boost"),
                     f"{field}_embedding_boost": data.get(field).get(f"{field}_embedding_boost")
                 }
     
