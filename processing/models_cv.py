@@ -10,7 +10,7 @@ def validate_date_format(value: Optional[str]) -> Optional[str]:
         return value
     except ValueError:
         raise ValueError("Date must be in YYYY-MM-DD format")
-
+    
 class AgeIndicators(BaseModel):
     education_timeline: Optional[str]
     work_experience_type: Optional[str]

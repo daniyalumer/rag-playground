@@ -12,241 +12,164 @@ from processing.models_query import QueryFormatter
 def create_extraction_prompt_job_description(job_description_text: str) -> ChatPromptTemplate:
     system_message = SystemMessage(
         content="""
-        You are an advanced semantic parsing expert specializing in candidate query and job description analysis with vector-based matching capabilities. 
-        Your role is to extract rich, semantically meaningful information from both natural language queries and job descriptions that will be converted into vector embeddings for matching with candidate profiles. 
-        Your task is to extract structured information from the given input and analyze whether it targets or belongs to a teenage candidate. 
-        The input can range from a detailed job description to a simple search phrase like "Software Engineer from MIT" or "Looking for a CS graduate from Stanford with 2 years experience in Python".
-        Return ONLY a valid JSON object that strictly follows the predefined schema—no additional text, comments, or explanations.
-        
-        **Important:** The response **must** adhere to the predefined schema with exact key names and correct data types.
-        
-        Pay special attention to indicators of a teenage job description:
-        1. Education timeline (required education level)
-        2. Work experience type (required work experience)
-        3. Extracurricular focus (desired extracurricular activities)
-        4. Email style (formality of communication)
-        5. Certification level (required certifications)
-        6. Writing style (tone and formality of the job description)
+        You are an expert in semantic search optimization for job matching, specializing in deep understanding of requirements.
+        Your primary focus is semantic matching with text search as a supplementary signal.
 
-        Core Responsibilities:
-        1. Extract explicit requirements and implicit expectations from any input length
-        2. Analyze semantic context and professional level
-        3. Identify age-appropriate indicators
-        4. Assess skill transferability for young applicants
-        5. Determine teenage suitability with high confidence
-        6. Infer missing details from context
-        7. Map brief mentions to comprehensive structured data
-        8. Maintain semantic consistency regardless of input format
+        These example just serve as a basis and you will infer the role based priority on your own expertise to optimize the querying.
 
-        Guidelines for Semantic Analysis:
-        - Consider both direct statements and contextual implications
-        - Identify core competencies vs. preferred qualifications
-        - Evaluate flexibility in requirements for young applicants
-        - Assess the developmental nature of stated responsibilities
-        - Map professional requirements to teenage-equivalent experiences
-        - Expand abbreviated terms and acronyms
-        - Infer implied requirements and preferences
-        - Handle both structured and unstructured input formats
+        I will be querying over the following fields in defined in my elastic search index:
+        - Personal Summary (semantic, text search)
+        - Education
+            degree (semantic, text search)
+            institution (semantic, text search)
+            location (semantic, text search)
+            start_date (text search)
+            end_date (text search)
+            gpa (text search)
+            honors (semantic, text search)
+            description (semantic, text search)
+        - Work Experience
+            job_title (semantic, text search)
+            employer (semantic, text search)
+            location (semantic, text search)
+            start_date (text search)
+            end_date (text search)
+            description (semantic, text search)
+            achievements (semantic, text search)
+        - Skills (semantic, text search)
+        - Projects
+            title (semantic, text search)
+            description (semantic, text search)
+            role (semantic, text search)
+            technologies (semantic, text search)
+            start_date (text search)
+            end_date (text search)
+        - Certifications
+            name (semantic, text search)
+            description (semantic, text search)
+            issuing_organization (semantic, text search)
+            issue_date (text search)
+            expiration_date (text search)
+        - Publications
+            title (semantic, text search)
+            publisher (semantic, text search)
+            description (semantic, text search)
+            publication_date (text search)
+        - Languages
+            language (semantic, text search)
+            proficiency (semantic, text search)
+        - Awards/Honors
+            title (semantic, text search)
+            issuing_organization (semantic, text search)
+            description (semantic, text search)
+            issue_date (text search)
+        - Volunteer Experience
+            role (semantic, text search)
+            organization (semantic, text search)
+            description (semantic, text search)
+            start_date (text search)
+            end_date (text search)
+        
+
+
+        Boost Value Guidelines:
+        - Semantic search boost (_embedding_boost): 0.0 to 10.0
+          - Critical Understanding: 8.0-10.0 (deep semantic comprehension)
+          - Important Concepts: 6.0-7.9 (conceptual relevance)
+          - Supporting Context: 4.0-5.9 (contextual alignment)
+          - Not Mentioned: 0.0
+
+        - Text search boost (_boost): 0.0 to 5.0
+          - Exact Terms: 4.0-5.0 (specific requirements)
+          - Key Terms: 2.0-3.9 (important terminology)
+          - Supporting Terms: 1.0-1.9 (contextual terms)
+          - Not Mentioned: 0.0
+
+        Role-Based Priority Examples:
+        1. Technical Roles:
+           Skills (semantic: 9-10, text: 3-4) = Experience (semantic: 9-10, text: 3-4) > Education (semantic: 6-7, text: 2-3)
+        
+        2. Academic Roles:
+           Education (semantic: 9-10, text: 4-5) > Publications (semantic: 8-9, text: 3-4) > Experience (semantic: 7-8, text: 2-3)
+        
+        3. Management Roles:
+           Experience (semantic: 9-10, text: 3-4) > Skills (semantic: 8-9, text: 2-3) > Education (semantic: 6-7, text: 2-3)
+
+
+        Key Analysis Rules:
+        1. Prioritize semantic understanding over exact matches
+        2. Consider both explicit and implicit requirements
+        3. Expand abbreviated terms and acronyms
+        4. Infer missing information from context
+        5. Map brief mentions to comprehensive data
+        6. Maintain semantic consistency across fields
         """
     )
 
     user_message = HumanMessage(
-        content=f"""
-        Extract structured information from the job description text below while strictly adhering to these rules:
-
-        **Input Analysis Requirements:**
-        - Handle both detailed job descriptions and brief search queries
-        - Extract meaning from incomplete or informal queries
-        - Expand abbreviated terms and acronyms
-        - Infer missing information from context
-        - Map brief mentions to full structured data
-        - Consider both explicit and implicit requirements
+        content=f'''
+        Extract structured information and assign boost values, following these examples. However you can infer improved boost score based on your expertise and the query requirements:
+        Scoring should be optimized for semantic search with text search as a supplementary signal in elastic search.
         
+        1. Technical Query Example - Note equal priority for skills and experience:
+        {{
+          "work_experience": {{
+            "job_title": "Senior Software Engineer",
+            "job_title_boost": 4.5,
+            "job_title_embedding_boost": 9.5,
+            "description": "Python development, cloud architecture, team leadership",
+            "description_boost": 3.5,
+            "description_embedding_boost": 9.5
+          }},
+          "skills": "Python, AWS, system design, leadership",
+          "skills_boost": 4.0,
+          "skills_embedding_boost": 9.5
+        }}
 
+        2. Academic Query Example:
+        {{
+          "education": {{
+            "degree": "PhD in Computer Science",
+            "degree_boost": 4.5,
+            "degree_embedding_boost": 9.0,
+            "description": "Machine Learning research focus",
+            "description_boost": 3.0,
+            "description_embedding_boost": 9.5
+          }},
+          "publications": {{
+            "description": "Deep Learning research publications",
+            "description_boost": 3.0,
+            "description_embedding_boost": 9.0
+          }}
+        }}
 
-        **Output Requirements:**
-        - Return a **valid JSON object** that strictly follows the predefined schema.
-        - **Do not include extra text, explanations, or formatting.**
-        - Ensure all keys are present in the JSON, even if their values are `null`.
-        - **Use exact key names** as defined in the schema—do not modify, add, or remove any keys.
-        - Maintain **correct data types** (e.g., `boolean`, `float`, `string`).
-        - For missing data, use **`null`** (JSON equivalent of `None` in Python).
-        - Format all dates as **`YYYY-MM-DD`** (e.g., "2025-02-13").
+        Required Fields (if mentioned in query):
+        1. Contact Information (location requirements)
+        2. Work Experience (roles, responsibilities)
+        3. Education (qualifications, institutions)
+        4. Skills (technical, soft skills)
+        5. Projects (relevant work)
+        6. Publications (if relevant)
+        7. Certifications (required qualifications)
+        8. Languages (if specified)
+        9. Awards/Honors (relevant achievements)
+        10. Volunteer Experience (if valuable)
+        11. Personal Summary (role context)
 
-        **Teenage Analysis Requirements:**
-        - Set `is_teenage` boolean based on overall assessment.
-        - Provide `teenage_confidence` as a float between 0.0 and 1.0, extent to which job is meant for a teenager.
-        - Ensure `age_indicators` object includes:
-        - `education_timeline`: Note required educational stage for the job.
-        - `work_experience_type`: Describe required work experience for the job.
-        - `extracurricular_focus`: Note desired extracurricular activities for the job.
-        - `email_style`: Analyze formality of communication required for the job.
-        - `certification_level`: Assess required certification complexity required for the job.
-        - `writing_style`: Evaluate overall tone and formality for the job.
+        Schema Requirements:
+        1. Return valid JSON matching QueryFormatter model
+        2. Use exact field names - no modifications
+        3. Format dates as YYYY-MM-DD
+        4. Set null for missing fields with 0.0 boosts
+        5. Include rich context for semantic matching
+        6. Include relevant synonyms and related terms
+        7. Maintain professional terminology
+        8. Preserve context and relationships
 
-        1. Teenage Suitability Analysis:
-           - Evaluate 'is_teenage' based on:
-            * Required education level vs. typical teenage education.
-            * Experience requirements vs. possible teenage experience.
-            * Responsibility level vs. teenage capability.
-            * Legal working age requirements.
-            * Developmental appropriateness.
-           - Calculate 'teenage_confidence' considering:
-            * Clarity of age-appropriate indicators.
-            * Flexibility of requirements.
-            * Development potential.
-            * Supervision level.
-            * Safety considerations.
-
-        2. Age Indicators Extraction:
-           - education_timeline: 
-            * Identify the education requirements mentioned in the job description.
-            * Map them to typical teenage education stages (e.g., high school, early college).
-            * Consider whether the role is open to candidates currently pursuing education or in transition phases (e.g., summer jobs, internships).
-           - work_experience_type:
-            * Identify the nature of required work experience.
-            * Determine whether equivalent teenage experiences (e.g., internships, volunteer work, school projects, part-time jobs) are acceptable.
-            * Assess whether the job considers informal or seasonal/part-time experience relevant.
-           - extracurricular_focus:
-            * Identify any emphasis on extracurricular activities.
-            * Map these to typical teenage activities such as student organizations, sports, coding bootcamps, school clubs, or online certifications.
-            * Assess whether these activities contribute to skill development relevant to the job.
-           - email_style:
-            * Assess if the job expects a formal or professional communication style.
-            * Consider whether the required level of written/verbal communication is developmentally appropriate for teenagers.
-           - certification_level:
-            * Identify any certification requirements in the job description.
-            * Assess whether these certifications are accessible to teenagers or have age restrictions.
-           - writing_style:
-            * Analyze the language and tone of the job description.
-            * Determine whether the role expects a highly professional writing style or allows for a more flexible, learning-oriented approach.
-
-        3. Contact Information Extraction:
-           - Extract and structure the following contact details:
-            * Job poster's full name (if available)
-            * Contact phone number(s)
-            * Contact email address(es)
-            * LinkedIn profile URL
-            * Company/portfolio website
-            * Complete job location address including:
-                - Street address
-                - City/State/ZIP
-                - Country
-                - Geographic context
-            * Note: All fields are optional but must be included in output even if null    
-
-        4. Work Experience Section:
-           Provide rich descriptions and extract information for:
-           - job_title: Include role context and alternative titles.
-           - employer: Organization name and alternative titles.
-           - location: Full address and geographical context.
-           - start_date: Employment start date (YYYY-MM-DD format).
-           - end_date: Employment end date (YYYY-MM-DD format).
-           - description: Detailed responsibilities with context.
-           - achievements: Expected outcomes and success metrics.
-
-        5. Skills Section:
-           Create a comprehensive skills description including:
-           - Technical skills with proficiency levels and alternate names.
-           - Soft skills with proficiency levels and alternate names.
-           - Related and transferable skills.
-           - Skill application contexts.
-
-        6. Education Section:
-           Rich descriptions and extract information for:
-           - degree: Include field context and alternatives.
-           - institution: Institution name, level of institution.
-           - location: Full address and geographical context.
-           - start_date: Education start date (YYYY-MM-DD format).
-           - end_date: Education end date (YYYY-MM-DD format).
-           - gpa: Grade point average and scale.
-           - honors: Academic achievements and their significance.
-           - description: Program details and relevant coursework.
-
-        7. Projects Section:
-           Detailed descriptions and extract information for:
-           - title: Project context and scope.
-           - description: Comprehensive project details.
-           - role: Responsibilities and leadership aspects.
-           - technologies: Technical stack and tools used.
-           - start_date: Project start date (YYYY-MM-DD format).
-           - end_date: Project end date (YYYY-MM-DD format).
-
-        8. Personal Summary Guidance:
-           Extract or infer:
-           - Generate a personal summary of an ideal candidate from the job description.
-           - Key qualifications and their relevance.
-           - Professional level and experience.
-           - Core competencies and strengths.
-           - Career trajectory indicators.
-
-        9. Additional Sections:
-            Certifications Section:
-           - For each required/preferred certification mentioned in the job description:
-             * name: Extract exact certification names or qualifications required
-             * description: Capture why this certification is relevant to the role
-             * issuing_organization: Identify preferred certification bodies
-             * issue_date: Note if recent certification is required (YYYY-MM-DD format)
-             * expiration_date: Note if certification must be current (YYYY-MM-DD format)
-
-            Publications Section:
-           - For any publication-related requirements:
-             * title: Type of publications required (e.g., "Technical Blog Posts", "Research Papers")
-             * publisher: Expected publishing platforms or journals
-             * description: Details about expected publication topics and impact
-             * publication_date: Timeframe requirements if specified (YYYY-MM-DD format)
-             * url: Links to example publications if provided
-
-            Languages Section:
-           - For each language requirement in the job posting:
-             * language: Required or preferred languages
-             * proficiency: Specified proficiency level required ("Beginner", "Intermediate", "Advanced", "Native")
-             * Note: Extract both primary and secondary language requirements
-
-            Awards and Honors Section:
-           - For any mentioned awards or achievements:
-             * title: Types of recognition valued by the employer
-             * issuing_organization: Relevant awarding bodies or organizations
-             * issue_date: Recency requirements if specified (YYYY-MM-DD format)
-             * description: How these achievements relate to the role
-
-            Volunteer Experience Section:
-           - For any volunteer experience requirements:
-             * role: Types of volunteer roles valued
-             * organization: Preferred organization types
-             * start_date: Experience timeframe if specified (YYYY-MM-DD format)
-             * end_date: Duration requirements if specified (YYYY-MM-DD format)
-             * description: How volunteer experience relates to the position
-
-
-
-        Semantic Enhancement Requirements:
-        - Use clear, specific language.
-        - Include relevant synonyms and related terms.
-        - Maintain professional terminology.
-        - Preserve context and relationships.
-        - Include implied skills and requirements.
-
-        Output Requirements:
-        - Follow exact schema structure.
-        - Ensure all text fields are detailed enough for meaningful embeddings.
-        - Include relevant synonyms and related terms.
-        - Maintain professional terminology.
-        - Preserve context and relationships.
-        - Include implied skills and requirements.
-        - Use null for missing fields.
-        - Format dates as YYYY-MM-DD.
-        - Maintain semantic consistency across all fields.
-
-        **Strict Compliance Notice:**
-        - The response **must** be a valid JSON object matching the schema exactly.
-        - No extra commentary, markdown formatting, or explanations are allowed.
-
-        **JOB DESCRIPTION TEXT:**
+        Input Text:
         {job_description_text}
-        """
+        '''
     )
-
 
     return ChatPromptTemplate.from_messages([system_message, user_message])
 

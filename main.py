@@ -6,6 +6,7 @@ from processing.extract import process_pdfs
 from processing.parse_cv import process_cvs
 from processing.parse_query import process_job_description
 from processing.calculate_embeddings import embed_json_files, embed_json_file
+from processing.calculate_embeddings_query import embed_query_file
 from processing.user_input import collect_user_input, save_and_embed_query
 from clients.elasticsearch import create_es_client
 from indexing import create_index, index_documents, delete_index
@@ -74,8 +75,10 @@ def main():
     print("---------------------------Embedding job description---------------------")
 
     # Embed the parsed job description
+    #input_file_path = f"data/user_query/parsed_query_20250225_175553.json"
+    #output_file_path = f"data/user_query_embeddings/parsed_query_embeddings_20250226_120902.json"
     output_file_path = f"data/user_query_embeddings/parsed_query_embeddings_{timestamp}.json"
-    embed_json_file(input_file_path, output_file_path)
+    embed_query_file(input_file_path, output_file_path)
     
 
 

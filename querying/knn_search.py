@@ -10,167 +10,40 @@ def construct_knn_query(embedded_query):
     knn_queries = []
     keyword_queries = set()  # Use set to prevent duplicates
     
-    # Define field weights for boosting with exact field names from mapping
-    field_weights = {
-        "work_experience": {
-            "job_title": {
-                "text": 4.0,
-                "embedding": 4.5
-            },
-            "employer": {
-                "text": 3.5,
-                "embedding": 4.0
-            },
-            "location": {
-                "text": 2.0,
-                "embedding": 2.5
-            },
-            "description": {
-                "text": 3.5,
-                "embedding": 4.0
-            },
-            "achievements": {
-                "text": 3.5,
-                "embedding": 4.0
-            },
-            "default": {
-                "text": 2.0,
-                "embedding": 2.5
-            }
-        },
-        "skills": {
-            "value": {
-                "text": 4.0,
-                "embedding": 4.5
-            },
-            "default": {
-                "text": 2.5,
-                "embedding": 3.0
-            }
-        },
-        "education": {
-            "degree": {
-                "text": 4.0,
-                "embedding": 4.5
-            },
-            "institution": {
-                "text": 3.5,
-                "embedding": 4.0
-            },
-            "location": {
-                "text": 2.0,
-                "embedding": 2.5
-            },
-            "honors": {
-                "text": 3.0,
-                "embedding": 3.5
-            },
-            "description": {
-                "text": 2.5,
-                "embedding": 3.0
-            },
-            "default": {
-                "text": 2.0,
-                "embedding": 2.5
-            }
-        },
-        "personal_summary": {
-            "value": {
-                "text": 3.0,
-                "embedding": 3.5
-            },
-            "default": {
-                "text": 1.5,
-                "embedding": 2.0
-            }
-        },
-        "projects": {
-            "title": {
-                "text": 3.5,
-                "embedding": 4.0
-            },
-            "description": {
-                "text": 3.0,
-                "embedding": 3.5
-            },
-            "role": {
-                "text": 3.0,
-                "embedding": 3.5
-            },
-            "technologies": {
-                "text": 3.5,
-                "embedding": 4.0
-            },
-            "default": {
-                "text": 2.0,
-                "embedding": 2.5
-            }
-        },
-        "certifications": {
-            "name": {
-                "text": 3.5,
-                "embedding": 4.0
-            },
-            "description": {
-                "text": 3.0,
-                "embedding": 3.5
-            },
-            "issuing_organization": {
-                "text": 3.0,
-                "embedding": 3.5
-            },
-            "default": {
-                "text": 1.2,
-                "embedding": 1.5
-            }
-        }
-    }
-    
-    # Weight multipliers for semantic vs text search
-    SEMANTIC_WEIGHT = 1.5  # Semantic search gets higher weight
-    TEXT_WEIGHT = 0.5     # Text search gets lower weight
-    
     # Define which fields are nested in the index
     nested_fields = {
         "education", "work_experience", "projects", "certifications",
         "publications", "languages", "awards_and_honors", "volunteer_experience"
     }
+
+    SEMANTIC_WEIGHT = 1.0   # Weight for semantic search
+    
+    # Fields to exclude from query construction
+    excluded_fields = {"references"}
     
     # Process each field in the embedded query
     for field_name in embedded_query:
-        if field_name == "age_indicators":
-            continue
-            
+        if field_name in excluded_fields:
+            continue  # Skip excluded fields
+         
         field_data = embedded_query.get(field_name)
+        print(f"Processing field: {field_name}")  # Debug statement
         if isinstance(field_data, dict):
             # Check if this is a nested field in the index
             if field_name in nested_fields:
                 # Process each field in the nested object
                 for key, value in field_data.items():
+                    print(f"Nested field: {key}")  # Debug statement
                     # Get base field name without _embedding suffix
                     base_key = key.replace('_embedding', '')
                     
-                    # Get field-specific boost values
+                    # Get field-specific boost values dynamically
                     if key.endswith('_embedding'):
-                        field_boost = (
-                            field_weights.get(field_name, {})
-                            .get(base_key, {})
-                            .get('embedding',
-                                field_weights.get(field_name, {})
-                                .get('default', {})
-                                .get('embedding', 1.0)
-                            )
-                        )
+                        field_boost = field_data.get(f"{base_key}_embedding_boost")
+                        print(f"Embedding boost: {field_boost}")  # Debug statement
                     else:
-                        field_boost = (
-                            field_weights.get(field_name, {})
-                            .get(key, {})
-                            .get('text',
-                                field_weights.get(field_name, {})
-                                .get('default', {})
-                                .get('text', 1.0)
-                            )
-                        )
+                        field_boost = field_data.get(f"{base_key}_boost")
+                        print(f"Text boost: {field_boost}")
                     
                     # Handle semantic search (vector fields)
                     if value and key.endswith('_embedding'):
@@ -198,7 +71,7 @@ def construct_knn_query(embedded_query):
                                     "match": {
                                         f"{field_name}.{key}": {
                                             "query": value,
-                                            "boost": field_boost * TEXT_WEIGHT,
+                                            "boost": field_boost,
                                             "fuzziness": "AUTO"
                                         }
                                     }
@@ -209,30 +82,17 @@ def construct_knn_query(embedded_query):
             else:
                 # Process non-nested fields
                 for key, value in field_data.items():
+                    print(f"Non-nested field: {key}")  # Debug statement
                     # Get base field name without _embedding suffix
                     base_key = key.replace('_embedding', '')
                     
-                    # Get field-specific boost values
+                    # Get field-specific boost values dynamically
                     if key.endswith('_embedding'):
-                        field_boost = (
-                            field_weights.get(field_name, {})
-                            .get(base_key, {})
-                            .get('embedding',
-                                field_weights.get(field_name, {})
-                                .get('default', {})
-                                .get('embedding', 1.0)
-                            )
-                        )
+                        field_boost = field_data.get(f"{base_key}_embedding_boost")
+                        print(f"Embedding boost: {field_boost}")  # Debug statement
                     else:
-                        field_boost = (
-                            field_weights.get(field_name, {})
-                            .get(key, {})
-                            .get('text',
-                                field_weights.get(field_name, {})
-                                .get('default', {})
-                                .get('text', 1.0)
-                            )
-                        )
+                        field_boost = field_data.get(f"{base_key}_boost")
+                        print(f"Text boost: {field_boost}")
                     
                     # Handle semantic search (vector fields)
                     if value and key.endswith('_embedding'):
@@ -252,7 +112,7 @@ def construct_knn_query(embedded_query):
                             "match": {
                                 f"{field_name}.{key}": {
                                     "query": value,
-                                    "boost": field_boost * TEXT_WEIGHT,
+                                    "boost": field_boost,
                                     "fuzziness": "AUTO"
                                 }
                             }
@@ -293,7 +153,7 @@ def knn_search(client, index_name, embedded_query):
         body={
             "size": 10,
             "query": query,
-            "_source": ["document_id", "is_teenage", "teenage_confidence"],
+            "_source": ["document_id"],
             "track_scores": True,
             "explain": True
         }
